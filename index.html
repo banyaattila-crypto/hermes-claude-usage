@@ -87,13 +87,14 @@
   .sectitle .hint{color:var(--muted);font-size:12px;font-weight:500;}
   svg{width:100%;height:auto;display:block;}
   .chartwrap{position:relative;}
-  .charthead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
   .resetbadge{
+    position:absolute;top:6px;left:8px;
     background:rgba(255,200,87,.14);border:1px solid rgba(255,200,87,.35);color:var(--gold);
     font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.02em;
     backdrop-filter:blur(2px);
   }
   .mabadge{
+    position:absolute;top:6px;right:8px;
     background:rgba(45,212,191,.14);border:1px solid rgba(45,212,191,.4);color:var(--green);
     font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.02em;
     backdrop-filter:blur(2px);
@@ -134,7 +135,6 @@
   <div class="tagrow">
     <span class="chip reset"><span class="dot gold"></span><span id="resetTxt">Reset: —</span></span>
     <span class="chip plan" id="planChip"><span class="dot green"></span><span id="planTxt">—</span></span>
-    <span class="mabadge" id="maBadge" hidden>MA —%</span>
   </div>
 
   <div class="card">
@@ -163,11 +163,10 @@
 
   <div class="card">
     <div class="sectitle">Kumulatív felhasználás <span class="hint">terv (sárga) vs. valós (zöld)</span></div>
-    <div class="charthead">
-      <div class="resetbadge" id="resetBadge">—</div>
-    </div>
     <div class="chartwrap">
       <svg id="chart" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="resetbadge" id="resetBadge">—</div>
+      <div class="mabadge" id="maBadge" hidden>MA —%</div>
     </div>
     <div class="legend">
       <span><span class="dot gold"></span>lineáris terv</span>
@@ -344,7 +343,7 @@
 
   function drawChart(c, history){
     const svg=document.getElementById("chart");
-    const W=360,H=220,padL=34,padR=12,padT=16,padB=26;
+    const W=360,H=220,padL=34,padR=34,padT=16,padB=26;
     const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
     const X=i=>x0+(x1-x0)*(i/7);          // 8 pont (0..7)
     const Y=v=>y0+(y1-y0)*(v/100);
