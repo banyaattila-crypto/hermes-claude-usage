@@ -210,7 +210,7 @@
   if(typeof state.anchor!=="number") state.anchor=5;
   if(typeof state.history!=="object" || state.history===null) state.history={};
   function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
-  function todayKey(now){ return now.getFullYear()+"-"+(now.getMonth()+1)+"-"+now.getDate(); }
+  function todayKey(now){ const d=new Date(now); if(now.getHours()>=16) d.setDate(d.getDate()+1); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 
   // anchor = reset nap (getDay érték). A ciklus a legutóbbi anchor 16:00-től a következő anchor 16:00-ig tart.
   function cycleStart(now, aw){
