@@ -75,7 +75,7 @@
     border-radius:9px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;
   }
   .anchorbts button.active{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:var(--green);}
-  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:18px;}
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:18px;}
   .day{text-align:center;padding:6px 2px 8px;border-radius:10px;background:var(--card2);display:flex;flex-direction:column;align-items:stretch;}
   .day.today{background:rgba(255,200,87,.16);outline:1px solid rgba(255,200,87,.4);}
   .seg{height:9px;border-radius:3px;background:var(--bar-future);margin:0 0 7px;width:100%;}
@@ -88,15 +88,15 @@
   svg{width:100%;height:auto;display:block;}
   .chartwrap{position:relative;}
   .resetbadge{
-    position:absolute;top:6px;left:2px;
+    position:absolute;top:6px;left:8px;
     background:rgba(255,200,87,.14);border:1px solid rgba(255,200,87,.35);color:var(--gold);
-    font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.02em;
+    font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.02em;
     backdrop-filter:blur(2px);
   }
   .mabadge{
-    position:absolute;top:6px;right:2px;
+    position:absolute;top:6px;right:8px;
     background:rgba(45,212,191,.14);border:1px solid rgba(45,212,191,.4);color:var(--green);
-    font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.02em;
+    font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.02em;
     backdrop-filter:blur(2px);
   }
   .mabadge[hidden]{display:none;}
@@ -279,17 +279,16 @@
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
     }
 
-    // day grid: minden cellaba a szegmens csik (felul) + nap nev + terv %.
-    // igy a csik fizikailag a naposzlopban van, nem csusztathato el.
+    // day grid: 8 oszlop, Pentekekkel kezd es zarul (P,Szo,Vas,Het,Ked,Sze,Csu,P)
     const maCycleIdx = c.dayIndex;
     const grid=document.getElementById("daygrid"); grid.innerHTML="";
-    for(let i=0;i<7;i++){
-      const w=(c.aw+1+i)%7;
+    for(let i=0;i<8;i++){
+      const w=(c.aw+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
       const segCls="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
       // a MA napon a valos erteket mutatjuk (ha van), kulonben a tervet
-      const vTxt = (i===maCycleIdx && c.real!=null) ? c.real : (i+1)*100/7;
+      const vTxt = (i===maCycleIdx && c.real!=null) ? c.real : i*100/7;
       d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF(vTxt)}%</div>`;
       grid.appendChild(d);
     }
@@ -376,7 +375,7 @@
     });
     // X labels: i. X-pont = a (i+1). napi szegmentum vege (aw+1+i)%7, illeszkedik a napi racshoz
     const XL=[];
-    for(let i=0;i<8;i++) XL.push(WDS[(c.aw+1+i)%7]);
+    for(let i=0;i<8;i++) XL.push(WDS[(c.aw+i)%7]);
     for(let i=0;i<8;i++){
       s+=`<text x="${X(i)}" y="${H-8}" fill="#6b7488" font-size="9" text-anchor="middle">${XL[i]}</text>`;
     }
