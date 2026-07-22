@@ -75,12 +75,11 @@
     border-radius:9px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;
   }
   .anchorbts button.active{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:var(--green);}
-  .segbar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;}
-  .seg{height:9px;border-radius:3px;background:var(--bar-future);width:100%;}
-  .seg.done{background:var(--bar-done);} .seg.today{background:var(--bar-today);box-shadow:0 0 6px rgba(255,200,87,.6);}
-  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px;}
-  .day{text-align:center;padding:8px 2px;border-radius:10px;background:var(--card2);}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:18px;}
+  .day{text-align:center;padding:6px 2px 8px;border-radius:10px;background:var(--card2);display:flex;flex-direction:column;align-items:stretch;}
   .day.today{background:rgba(255,200,87,.16);outline:1px solid rgba(255,200,87,.4);}
+  .seg{height:9px;border-radius:3px;background:var(--bar-future);margin:0 0 7px;width:100%;}
+  .seg.done{background:var(--bar-done);} .seg.today{background:var(--bar-today);box-shadow:0 0 6px rgba(255,200,87,.6);}
   .day .d{font-size:11px;color:var(--muted);font-weight:700;}
   .day.today .d{color:var(--gold);}
   .day .v{font-size:12px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;}
@@ -147,7 +146,6 @@
       </span>
     </div>
 
-    <div class="segbar" id="segbar"></div>
     <div class="grid" id="daygrid"></div>
 
     <div class="anchorbar">
@@ -273,24 +271,16 @@
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
     }
 
-    // MA ciklusnapi index (0=Pentek): a szegmentum, amiben most vagyunk (hatar 16:00)
+    // day grid: minden cellaba a szegmens csik (felul) + nap nev + terv %.
+    // igy a csik fizikailag a naposzlopban van, nem csusztathato el.
     const maCycleIdx = c.dayIndex;
-
-    // segmented bar (7 buckets) - ciklusnapi index szerint, MA = maCycleIdx
-    const seg = document.getElementById("segbar"); seg.innerHTML="";
-    for(let i=0;i<7;i++){
-      const d=document.createElement("div");
-      d.className="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
-      seg.appendChild(d);
-    }
-
-    // day grid: i -> ciklusnap (aw+i)%7, hogy a grafikon X-pozicioihoz igazodjon (0=Pentek=start)
     const grid=document.getElementById("daygrid"); grid.innerHTML="";
     for(let i=0;i<7;i++){
       const w=(c.aw+1+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
-      d.innerHTML=`<div class="d">${WDS[w]}</div><div class="v">${HF((i+1)*100/7)}%</div>`;
+      const segCls="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
+      d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF((i+1)*100/7)}%</div>`;
       grid.appendChild(d);
     }
 
