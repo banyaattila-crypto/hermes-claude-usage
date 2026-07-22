@@ -103,6 +103,16 @@
   .footnote{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;}
   .legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;justify-content:center;flex-wrap:wrap;}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .trendbar{margin-top:14px;}
+  .trendlbl{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:7px;}
+  .trendlbl span{color:var(--txt);}
+  .trendtrack{position:relative;height:14px;border-radius:7px;overflow:hidden;
+    background:linear-gradient(90deg,#34d399 0%,#7be36b 35%,#ffc857 65%,#ff9f43 85%,#ff6b6b 100%);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.4);}
+  .trendmark{position:absolute;top:-3px;width:4px;height:20px;border-radius:2px;background:#fff;
+    box-shadow:0 0 6px rgba(255,255,255,.8),0 1px 3px rgba(0,0,0,.5);transform:translateX(-50%);
+    transition:left .6s ease;}
+  .trendscale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:5px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -156,6 +166,14 @@
       <span><span class="dot gold"></span>lineáris terv</span>
       <span><span class="dot green"></span>valós (napi + MA)</span>
       <span style="color:var(--gold-soft)">■ RESET</span>
+    </div>
+    <div class="trendbar">
+      <div class="trendlbl">Trend-előrejelzés: <span id="trendTxt">—</span></div>
+      <div class="trendtrack">
+        <div class="trendfill"></div>
+        <div class="trendmark" id="trendMark"></div>
+      </div>
+      <div class="trendscale"><span>biztos</span><span>határon</span><span>veszély</span></div>
     </div>
   </div>
 
@@ -303,6 +321,16 @@
     c3.style.color = (projEnd>100)? "var(--red)" : "var(--green)";
     c3t.textContent = (projEnd>100)? "Várható vége ⚠" : "Várható vége";
     c3.closest(".circ").classList.toggle("warn", projEnd>100);
+    // trend-előrejelzés sáv
+    const tMark=document.getElementById("trendMark");
+    const tTxt=document.getElementById("trendTxt");
+    const pct=Math.max(0,Math.min(120,projEnd));
+    if(tMark) tMark.style.left=(pct/120*100).toFixed(1)+"%";
+    if(tTxt){
+      if(projEnd>100){ tTxt.textContent=`Veszély: ${HF(projEnd)}% (túllépés)`; tTxt.style.color="var(--red)"; }
+      else if(projEnd>85){ tTxt.textContent=`Határon: ${HF(projEnd)}%`; tTxt.style.color="var(--gold)"; }
+      else { tTxt.textContent=`Biztos: ${HF(projEnd)}%`; tTxt.style.color="var(--green)"; }
+    }
 
     // reset badge: hátralévő napok
     const rb = document.getElementById("resetBadge");
