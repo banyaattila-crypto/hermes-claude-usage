@@ -480,10 +480,9 @@
   pctInput.addEventListener("keydown",e=>{ if(e.key==="Enter") document.getElementById("saveBtn").click(); if(e.key==="Escape") closeEdit(); });
   pctInput.addEventListener("blur",()=>{ setTimeout(closeEdit,120); });
 
-  buildAnchorBts();
-
-  tick(); render();
-  setInterval(()=>{ tick(); render(); }, 60000);
+  tick();
+  render();
+  try { buildAnchorBts(); } catch(e) { console.error("anchorBts hiba:", e); }
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) render(); });
 })();
 </script>
