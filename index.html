@@ -94,7 +94,6 @@
     backdrop-filter:blur(2px);
   }
   .mabadge{
-    position:absolute;top:6px;right:8px;
     background:rgba(45,212,191,.14);border:1px solid rgba(45,212,191,.4);color:var(--green);
     font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.02em;
     backdrop-filter:blur(2px);
@@ -135,6 +134,7 @@
   <div class="tagrow">
     <span class="chip reset"><span class="dot gold"></span><span id="resetTxt">Reset: —</span></span>
     <span class="chip plan" id="planChip"><span class="dot green"></span><span id="planTxt">—</span></span>
+    <span class="mabadge" id="maBadge" hidden>MA —%</span>
   </div>
 
   <div class="card">
@@ -166,7 +166,6 @@
     <div class="chartwrap">
       <svg id="chart" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="resetbadge" id="resetBadge">—</div>
-      <div class="mabadge" id="maBadge" hidden>MA —%</div>
     </div>
     <div class="legend">
       <span><span class="dot gold"></span>lineáris terv</span>
