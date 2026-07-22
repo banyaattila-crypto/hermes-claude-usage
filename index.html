@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kvóta-felhasználás · Heti ciklus</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --card:#141a2b; --card2:#1b2236; --line:#26304a;
+    --txt:#e8ecf5; --muted:#8a93a8;
+    --gold:#ffc857; --gold-soft:#f5b942;
+    --green:#34d399; --green-box:#0f3b30; --teal:#2dd4bf;
+    --red:#ff7676; --bar-done:#3a3f52; --bar-today:#ffc857; --bar-future:#1a2030;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    background:radial-gradient(1200px 600px at 70% -10%, #16203a 0%, var(--bg) 60%);
+    color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh; padding:20px 14px 40px; display:flex; justify-content:center;
+  }
+  .app{width:100%;max-width:440px;}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:18px;padding:0 2px;}
+  .statusbar .right{display:flex;gap:8px;align-items:center;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+  .chip.reset{background:rgba(255,200,87,.12);color:var(--gold);}
+  .chip.plan{background:rgba(52,211,153,.14);color:var(--green);}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .dot.gold{background:var(--gold);} .dot.green{background:var(--green);} .dot.red{background:var(--red);}
+  .eyebrow{color:var(--gold);font-size:12px;font-weight:700;letter-spacing:.14em;margin-bottom:6px;}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1;}
+  .daterange{color:var(--muted);font-size:14px;margin-top:4px;margin-bottom:14px;}
+  .tagrow{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .ma-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.08em;}
+  .big{font-size:60px;font-weight:800;line-height:1;margin:6px 0 2px;font-variant-numeric:tabular-nums;}
+  .big small{font-size:26px;font-weight:700;}
+  .sub{color:var(--muted);font-size:13px;}
+  .usagerow{display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:10px;}
+  .usagerow .lbl{font-size:13px;color:var(--txt);display:flex;align-items:center;gap:7px;}
+  .editwrap{display:inline-flex;align-items:center;gap:6px;position:relative;cursor:text;}
+  .valbox{background:var(--green-box);color:var(--green);font-weight:800;font-size:18px;padding:8px 12px;border-radius:12px;font-variant-numeric:tabular-nums;transition:.2s;}
+  .editwrap:hover .valbox{outline:1px dashed rgba(52,211,153,.5);}
+  .editinp{
+    width:0;opacity:0;padding:0;border:none;background:transparent;color:var(--green);
+    font-weight:800;font-size:18px;transition:.25s;font-variant-numeric:tabular-nums;
+  }
+  .editwrap.open .editinp{width:72px;opacity:1;padding:8px 10px;background:var(--card2);border:1px solid var(--line);border-radius:10px;}
+  .editwrap.open .valbox{display:none;}
+  .savebtn{
+    width:0;opacity:0;overflow:hidden;border:none;background:var(--green);color:#06281d;
+    border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;transition:.25s;height:34px;
+  }
+  .editwrap.open .savebtn{width:38px;opacity:1;}
+  .editinp:focus{outline:none;border-color:var(--green);}
+  .anchorbar{display:flex;align-items:center;gap:10px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px;flex-wrap:wrap;}
+  .anchorlbl{font-size:12px;color:var(--muted);font-weight:700;}
+  .anchorbts{display:flex;gap:5px;flex-wrap:wrap;}
+  .anchorbts button{
+    background:var(--card2);border:1px solid var(--line);color:var(--muted);
+    border-radius:9px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;
+  }
+  .anchorbts button.active{background:rgba(255,200,87,.16);border-color:rgba(255,200,87,.4);color:var(--gold);}
+  .delta{font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;}
+  .planpill{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:rgba(45,212,191,.15);color:var(--teal);font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;}
+  .segbar{display:flex;gap:4px;margin-top:18px;}
+  .seg{flex:1;height:9px;border-radius:3px;background:var(--bar-future);}
+  .seg.done{background:var(--bar-done);} .seg.today{background:var(--bar-today);}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px;}
+  .day{text-align:center;padding:8px 2px;border-radius:10px;background:var(--card2);}
+  .day.today{background:rgba(255,200,87,.16);outline:1px solid rgba(255,200,87,.4);}
+  .day .d{font-size:11px;color:var(--muted);font-weight:700;}
+  .day.today .d{color:var(--gold);}
+  .day .v{font-size:12px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;}
+  .sectitle{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;}
+  .sectitle .hint{color:var(--muted);font-size:12px;font-weight:500;}
+  svg{width:100%;height:auto;display:block;}
+  .circles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .circ{background:var(--card2);border-radius:14px;padding:14px 6px;text-align:center;}
+  .circ .ct{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px;}
+  .circ .cv{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .footnote{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;}
+  .legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;justify-content:center;flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="statusbar">
+    <span id="clock">--:--</span>
+    <span class="right"><span id="net">5G</span><span id="bat">● 40%</span></span>
+  </div>
+
+  <div class="eyebrow">KVÓTA-FELHASZNÁLÁS · HETI CIKLUS</div>
+  <h1>Kvóta-felhasználás</h1>
+  <div class="daterange" id="daterange">—</div>
+
+  <div class="tagrow">
+    <span class="chip reset"><span class="dot gold"></span><span id="resetTxt">Reset: —</span></span>
+    <span class="chip plan" id="planChip"><span class="dot green"></span><span id="planTxt">—</span></span>
+  </div>
+
+  <div class="card">
+    <div class="ma-label" id="maLabel">MA · —</div>
+    <div class="big" id="bigPct">0,00<small>%</small></div>
+    <div class="sub" id="bigSub">a heti kvótából halmozottan</div>
+
+    <div class="usagerow">
+      <span class="lbl"><span class="dot green"></span>Valós felhasználás</span>
+      <span class="editwrap" id="editWrap" title="Kattints a szerkesztéshez">
+        <span class="valbox" id="realBox">0,00</span>
+        <input id="pctInput" type="number" inputmode="decimal" step="0.01" min="0" max="100" placeholder="%" class="editinp">
+        <button id="saveBtn" class="savebtn">✓</button>
+      </span>
+    </div>
+    <div style="text-align:right;margin-top:6px;">
+      <span class="delta" id="deltaTxt">%  0,00%</span>
+    </div>
+
+    <div class="planpill" id="planPill"><span class="dot green"></span><span id="planPillTxt">—</span></div>
+
+    <div class="segbar" id="segbar"></div>
+    <div class="grid" id="daygrid"></div>
+
+    <div class="anchorbar">
+      <span class="anchorlbl">Reset:</span>
+      <div class="anchorbts" id="anchorBts"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sectitle">Kumulatív felhasználás <span class="hint">terv (sárga) vs. valós (zöld)</span></div>
+    <svg id="chart" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <span><span class="dot gold"></span>lineáris terv</span>
+      <span><span class="dot green"></span>valós (MA)</span>
+      <span style="color:var(--gold-soft)">■ RESET</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="circles">
+      <div class="circ"><div class="ct">Napi cél</div><div class="cv" id="c1">—</div></div>
+      <div class="circ"><div class="ct">Halmozott (valós)</div><div class="cv" id="c2">—</div></div>
+      <div class="circ"><div class="ct">Nap a ciklusban</div><div class="cv" id="c3">—</div></div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Önálló oldal · nincs API · adatok helyben tárolva (localStorage)<br>
+    Ciklus: 7 nap · reset a kiválasztott napon · frissítés automatikus (1 perc)
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const DAY_MS = 86400000;
+  const STORE = "kvota_usage_v1";
+  const HF = n => n.toLocaleString("hu-HU",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const MON = ["jan","febr","márc","ápr","máj","jún","júl","aug","szept","okt","nov","dec"];
+  const MONL = ["január","február","március","április","május","június","július","augusztus","szeptember","október","november","december"];
+  const DAYL = ["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"];
+  const WDS = ["VAS","HÉT","KED","SZE","CSÜ","PÉN","SZO"];
+
+  function load(){
+    try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&typeof s==="object") return s; }catch(e){}
+    return {realPct:null, anchor:5};
+  }
+  let state = load();
+  if(typeof state.anchor!=="number") state.anchor=5;
+  function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+
+  // anchor = reset nap (getDay érték). A ciklus a legutóbbi anchor 16:00-től a következő anchor 16:00-ig tart.
+  function cycleStart(now, aw){
+    const x = new Date(now.getTime());
+    x.setHours(16,0,0,0);
+    let guard=0;
+    // visszafele lépdelünk naponta, amíg nem találunk egy anchor-napi 16:00-at, ami már elmúlt
+    while(!(x.getDay()===aw && x.getTime()<=now.getTime()) && guard<14){
+      x.setDate(x.getDate()-1); x.setHours(16,0,0,0); guard++;
+    }
+    return x;
+  }
+
+  function compute(now){
+    const aw = state.anchor;
+    const start = cycleStart(now, aw);
+    const end = new Date(start.getTime()+7*DAY_MS);
+    const elapsed = now - start;
+    const dayIndex = Math.max(0, Math.min(6, Math.floor(elapsed / DAY_MS)));
+    const frac = Math.max(0, Math.min(1, elapsed / (7*DAY_MS)));
+    const planned = frac * 100;
+    const real = (state.realPct==null) ? null : Math.max(0, Math.min(100, state.realPct));
+    const delta = (real==null) ? null : (real - planned);
+    return {start,end,dayIndex,planned,real,delta,frac,aw};
+  }
+
+  function fmtDate(d){ return `${MON[d.getMonth()]} ${d.getDate()}.`; }
+  function fmtLong(d){ return `${d.getDate()}. ${MONL[d.getMonth()]}., ${DAYL[d.getDay()]}`; }
+
+  function render(){
+    const now = new Date();
+    const c = compute(now);
+
+    document.getElementById("daterange").textContent = `${fmtDate(c.start)} – ${fmtDate(new Date(c.start.getTime()+6*DAY_MS))}`;
+
+    const rem = c.end - now;
+    const rd = Math.max(0,Math.floor(rem/DAY_MS)), rh = Math.max(0,Math.floor((rem%DAY_MS)/3600000)), rm = Math.max(0,Math.floor((rem%3600000)/60000));
+    document.getElementById("resetTxt").textContent = `Reset: ${rd}n ${rh}ó ${rm}p`;
+    document.getElementById("maLabel").textContent = `MA · ${fmtLong(now).toUpperCase()}`;
+    // main big = időarányos (ciklus eleje óta eltelt %)
+    const shown = c.frac * 100;
+    document.getElementById("bigPct").innerHTML = `${HF(shown).replace(/,00$/,"")}<small>%</small>`;
+    const t0 = c.start.toLocaleString("hu-HU",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+    document.getElementById("bigSub").textContent = `${t0} óta eltelt időarányos rész (percenként frissül)`;
+
+    document.getElementById("realBox").textContent = HF(c.real==null?0:c.real);
+    const dt = document.getElementById("deltaTxt");
+    const pc = document.getElementById("planChip");
+    const pt = document.getElementById("planTxt");
+    const pp = document.getElementById("planPill");
+    const ppt = document.getElementById("planPillTxt");
+    if(c.delta==null){ dt.textContent="%  —"; dt.style.color="var(--muted)";
+      pc.style.background="rgba(138,147,168,.15)"; pc.style.color="var(--muted)";
+      pt.textContent="Nincs adat"; pp.style.display="none";
+    } else if(c.delta<=0){
+      dt.textContent=`%  ${c.delta.toFixed(2).replace(".",",")}%`; dt.style.color="var(--green)";
+      pc.style.background="rgba(52,211,153,.14)"; pc.style.color="var(--green)";
+      pt.textContent=`Terv alatt ${HF(Math.abs(c.delta))}%`;
+      pp.style.display="inline-flex"; pp.style.background="rgba(45,212,191,.15)"; pp.style.color="var(--teal)";
+      ppt.textContent=`${Math.floor(Math.abs(c.delta)/(100/7))} napja terv alatt`;
+    } else {
+      dt.textContent=`%  +${HF(c.delta)}%`; dt.style.color="var(--red)";
+      pc.style.background="rgba(255,118,118,.16)"; pc.style.color="var(--red)";
+      pt.textContent=`Terv felett ${HF(c.delta)}%`;
+      pp.style.display="inline-flex"; pp.style.background="rgba(255,118,118,.16)"; pp.style.color="var(--red)";
+      ppt.textContent=`${Math.ceil(c.delta/(100/7))} napja terv felett`;
+    }
+
+    // segmented bar (7 buckets)
+    const seg = document.getElementById("segbar"); seg.innerHTML="";
+    for(let i=0;i<7;i++){
+      const d=document.createElement("div");
+      d.className="seg"+(i<c.dayIndex?" done":(i===c.dayIndex?" today":""));
+      seg.appendChild(d);
+    }
+
+    // day grid: bucket i -> weekday (aw+1+i)%7
+    const grid=document.getElementById("daygrid"); grid.innerHTML="";
+    const todayW = now.getDay();
+    for(let i=0;i<7;i++){
+      const w=(c.aw+1+i)%7;
+      const d=document.createElement("div");
+      d.className="day"+(w===todayW?" today":"");
+      d.innerHTML=`<div class="d">${WDS[w]}</div><div class="v">${HF((i+1)*100/7)}%</div>`;
+      grid.appendChild(d);
+    }
+
+    document.getElementById("c1").textContent = HF(100/7)+"%";
+    document.getElementById("c2").textContent = HF(c.real==null?0:c.real)+"%";
+    document.getElementById("c3").textContent = (c.dayIndex+1)+"/7";
+
+    drawChart(c);
+  }
+
+  function drawChart(c){
+    const svg=document.getElementById("chart");
+    const W=360,H=220,padL=34,padR=12,padT=16,padB=26;
+    const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+    const X=i=>x0+(x1-x0)*(i/7);          // 8 pont (0..7)
+    const Y=v=>y0+(y1-y0)*(v/100);
+    let s="";
+    // defs: gradient + glow szűrők
+    s+=`<defs>
+      <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffc857" stop-opacity="0.30"/>
+        <stop offset="100%" stop-color="#ffc857" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="realFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#34d399" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>`;
+    // grid (fintebb, halványabb)
+    [0,25,50,75,100].forEach(v=>{
+      s+=`<line x1="${x0}" y1="${Y(v)}" x2="${x1}" y2="${Y(v)}" stroke="#1c2438" stroke-width="1"/>`;
+      s+=`<text x="${x0-8}" y="${Y(v)+3}" fill="#6b7488" font-size="9" text-anchor="end">${v}%</text>`;
+    });
+    // X labels
+    const XL=[WDS[c.aw]];
+    for(let i=0;i<7;i++) XL.push(WDS[(c.aw+1+i)%7]);
+    for(let i=0;i<8;i++){
+      s+=`<text x="${X(i)}" y="${H-8}" fill="#6b7488" font-size="9" text-anchor="middle">${XL[i]}</text>`;
+    }
+    // planned line coords (8 pont)
+    let pl="";
+    for(let i=0;i<8;i++){ pl+=(i?" L":"M")+X(i)+" "+Y(i*100/7); }
+    // kitöltés a terv-görbe alatt
+    s+=`<path d="${pl} L ${X(7)} ${y0} L ${X(0)} ${y0} Z" fill="url(#fillGrad)"/>`;
+    // terv vonal glow-val
+    s+=`<path d="${pl}" fill="none" stroke="#ffc857" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round"/>`;
+    for(let i=0;i<8;i++){
+      const v=i*100/7;
+      s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="2.5" fill="#ffc857"/>`;
+      if(i>0&&i<7) s+=`<text x="${X(i)}" y="${Y(v)-9}" fill="#ffc857" font-size="8" text-anchor="middle" opacity=".85">${HF(v)}</text>`;
+    }
+    // RESET badge
+    s+=`<g>
+      <rect x="${X(7)-26}" y="${Y(100)-30}" width="52" height="16" rx="8" fill="rgba(245,185,66,.16)" stroke="#f5b942" stroke-width="1"/>
+      <text x="${X(7)}" y="${Y(100)-19}" fill="#f5b942" font-size="8.5" text-anchor="middle" font-weight="700">RESET</text>
+    </g>`;
+    // valós: kitöltés + görbe (ha van) + pulzáló MA
+    if(c.real!=null){
+      const rx=X(c.frac*7), ry=Y(c.real);
+      // valós függőleges guide
+      s+=`<line x1="${rx}" y1="${ry}" x2="${rx}" y2="${y0}" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>`;
+      // MA pulzáló halo
+      s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" opacity=".25"><animate attributeName="r" values="6;11;6" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".30;.05;.30" dur="1.8s" repeatCount="indefinite"/></circle>`;
+      s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" stroke="#0b0f1a" stroke-width="2" filter="url(#glow)"/>`;
+      s+=`<text x="${rx}" y="${ry-14}" fill="#34d399" font-size="10.5" text-anchor="middle" font-weight="800">MA ${HF(c.real)}%</text>`;
+    }
+    svg.innerHTML=s;
+  }
+
+  function tick(){
+    document.getElementById("clock").textContent = new Date().toLocaleTimeString("hu-HU",{hour:"2-digit",minute:"2-digit"});
+  }
+
+  function buildAnchorBts(){
+    const wrap=document.getElementById("anchorBts");
+    const names=["V","H","K","Sze","Cs","P","Szo"];
+    wrap.innerHTML="";
+    for(let d=0;d<7;d++){
+      const b=document.createElement("button");
+      b.textContent=names[d];
+      if(d===state.anchor) b.classList.add("active");
+      b.addEventListener("click",()=>{ state.anchor=d; save(); buildAnchorBts(); render(); });
+      wrap.appendChild(b);
+    }
+  }
+
+  const editWrap=document.getElementById("editWrap");
+  const pctInput=document.getElementById("pctInput");
+  editWrap.addEventListener("click",e=>{
+    if(e.target.id==="saveBtn") return;
+    editWrap.classList.add("open");
+    pctInput.focus();
+  });
+  function closeEdit(){ editWrap.classList.remove("open"); }
+
+  document.getElementById("saveBtn").addEventListener("click",()=>{
+    const raw=(pctInput.value||"").replace(",",".");
+    const v=parseFloat(raw);
+    if(isNaN(v)){ if(raw===""){ closeEdit(); return; } alert("Érvényes számot adj meg (0–100)."); return; }
+    state.realPct=Math.max(0,Math.min(100,v));
+    save(); render();
+    pctInput.value="";
+    closeEdit();
+  });
+  pctInput.addEventListener("keydown",e=>{ if(e.key==="Enter") document.getElementById("saveBtn").click(); if(e.key==="Escape") closeEdit(); });
+  pctInput.addEventListener("blur",()=>{ setTimeout(closeEdit,120); });
+
+  buildAnchorBts();
+
+  tick(); render();
+  setInterval(()=>{ tick(); render(); }, 60000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) render(); });
+})();
+</script>
+</body>
+</html>
