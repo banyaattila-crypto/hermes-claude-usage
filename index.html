@@ -35,7 +35,7 @@
   .titlefont{font-family:"Geist",-apple-system,BlinkMacSystemFont,sans-serif;font-weight:800;letter-spacing:-.01em;}
   .daterange{color:var(--muted);font-size:14px;margin-top:4px;margin-bottom:14px;}
   .tagrow{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
-  .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden;}
   .ma-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.08em;}
   .hero{display:flex;flex-direction:column;align-items:center;margin:6px 0 4px;}
   .big{font-size:64px;font-weight:900;line-height:1;margin:0;font-variant-numeric:tabular-nums;font-family:"Fraunces",Georgia,serif;letter-spacing:-.01em;
@@ -75,7 +75,7 @@
     border-radius:9px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;
   }
   .anchorbts button.active{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:var(--green);}
-  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:18px;}
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:18px;}
   .day{text-align:center;padding:6px 2px 8px;border-radius:10px;background:var(--card2);display:flex;flex-direction:column;align-items:stretch;}
   .day.today{background:rgba(255,200,87,.16);outline:1px solid rgba(255,200,87,.4);}
   .seg{height:9px;border-radius:3px;background:var(--bar-future);margin:0 0 7px;width:100%;}
@@ -342,7 +342,7 @@
 
   function drawChart(c, history){
     const svg=document.getElementById("chart");
-    const W=360,H=220,padL=34,padR=34,padT=16,padB=26;
+    const W=360,H=220,padL=34,padR=44,padT=16,padB=26;
     const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
     const X=i=>x0+(x1-x0)*(i/7);          // 8 pont (0..7)
     const Y=v=>y0+(y1-y0)*(v/100);
@@ -376,7 +376,8 @@
     const XL=[];
     for(let i=0;i<8;i++) XL.push(WDS[(c.aw+i)%7]);
     for(let i=0;i<8;i++){
-      s+=`<text x="${X(i)}" y="${H-8}" fill="#6b7488" font-size="9" text-anchor="middle">${XL[i]}</text>`;
+      const anc = (i===7) ? "end" : "middle";
+      s += `<text x="${X(i)}" y="${H-8}" fill="#6b7488" font-size="9" text-anchor="${anc}">${XL[i]}</text>`;
     }
     // planned line coords (8 pont)
     let pl="";
