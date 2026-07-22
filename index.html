@@ -96,9 +96,11 @@
     backdrop-filter:blur(2px);
   }
   .circles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  .circ{background:var(--card2);border-radius:14px;padding:14px 6px;text-align:center;}
+  .circ{background:var(--card2);border-radius:14px;padding:14px 6px;text-align:center;border:1px solid var(--line);}
   .circ .ct{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px;}
   .circ .cv{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .circ.warn .cv{animation:pulseWarn 1.6s ease-in-out infinite;}
+  @keyframes pulseWarn{0%,100%{opacity:1}50%{opacity:.45}}
   .footnote{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;}
   .legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;justify-content:center;flex-wrap:wrap;}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
@@ -160,9 +162,9 @@
 
   <div class="card">
     <div class="circles">
-      <div class="circ"><div class="ct">Napi cél</div><div class="cv" id="c1">—</div></div>
-      <div class="circ"><div class="ct">Halmozott (valós)</div><div class="cv" id="c2">—</div></div>
-      <div class="circ"><div class="ct">Nap a ciklusban</div><div class="cv" id="c3">—</div></div>
+      <div class="circ"><div class="ct">Napi terv</div><div class="cv" id="c1">—</div></div>
+      <div class="circ"><div class="ct">Valós ma</div><div class="cv" id="c2">—</div></div>
+      <div class="circ"><div class="ct" id="c3t">Várható vége</div><div class="cv" id="c3">—</div></div>
     </div>
   </div>
 
@@ -185,11 +187,13 @@
 
   function load(){
     try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&typeof s==="object") return s; }catch(e){}
-    return {realPct:null, anchor:5};
+    return {realPct:null, anchor:5, history:{}};
   }
   let state = load();
   if(typeof state.anchor!=="number") state.anchor=5;
+  if(typeof state.history!=="object" || state.history===null) state.history={};
   function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+  function todayKey(now){ return now.getFullYear()+"-"+(now.getMonth()+1)+"-"+now.getDate(); }
 
   // anchor = reset nap (getDay érték). A ciklus a legutóbbi anchor 16:00-től a következő anchor 16:00-ig tart.
   function cycleStart(now, aw){
@@ -274,9 +278,35 @@
       grid.appendChild(d);
     }
 
-    document.getElementById("c1").textContent = HF(100/7)+"%";
-    document.getElementById("c2").textContent = HF(c.real==null?0:c.real)+"%";
-    document.getElementById("c3").textContent = (c.dayIndex+1)+"/7";
+    // burn-rate: atlagos napi valos novekmeny a ciklusban, es a vege kivetitese
+    const todayReal = (c.real==null)?0:c.real;
+    const c1v = HF(100/7);                                   // napi terv %
+    const c2v = HF(todayReal);                               // valos ma %
+    // atlagos napi novekmeny: ha van history es >1 bejegyzes a ciklusban
+    const histKeys = Object.keys(state.history).filter(k=>{
+      const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]); return d>=c.start;
+    });
+    let projEnd = todayReal, burnTxt="–";
+    if(histKeys.length>=2){
+      const vals = histKeys.map(k=>state.history[k]).sort((a,b)=>a-b);
+      const first=vals[0], last=vals[vals.length-1];
+      const spanDays = Math.max(1, histKeys.length-1);
+      const perDay = (last-first)/spanDays;                  // atm napi novekmeny
+      const daysLeft = Math.max(0, Math.ceil((c.end-now)/DAY_MS));
+      projEnd = Math.max(0, Math.min(200, last + perDay*daysLeft));
+      burnTxt = "+"+HF(perDay)+"%/nap";
+    } else if(c.real!=null){
+      // csak 1 adatpont: linearis tervel vetitjuk (kovetkezo napra a terv szerinti novekmeny)
+      const daysLeft = Math.max(0, Math.ceil((c.end-now)/DAY_MS));
+      projEnd = Math.max(0, Math.min(200, todayReal + (100/7)*daysLeft));
+    }
+    document.getElementById("c1").textContent = c1v+"%";
+    document.getElementById("c2").textContent = c2v+"%";
+    const c3=document.getElementById("c3"); const c3t=document.getElementById("c3t");
+    c3.textContent = HF(projEnd)+"%";
+    c3.style.color = (projEnd>100)? "var(--red)" : "var(--green)";
+    c3t.textContent = (projEnd>100)? "Várható vége ⚠" : "Várható vége";
+    c3.closest(".circ").classList.toggle("warn", projEnd>100);
 
     // reset badge: hátralévő napok
     const rb = document.getElementById("resetBadge");
@@ -384,7 +414,9 @@
     const raw=(pctInput.value||"").replace(",",".");
     const v=parseFloat(raw);
     if(isNaN(v)){ if(raw===""){ closeEdit(); return; } alert("Érvényes számot adj meg (0–100)."); return; }
-    state.realPct=Math.max(0,Math.min(100,v));
+    const val=Math.max(0,Math.min(100,v));
+    state.realPct=val;
+    state.history[todayKey(new Date())]=val;
     save(); render();
     pctInput.value="";
     closeEdit();
