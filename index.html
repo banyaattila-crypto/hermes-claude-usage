@@ -273,8 +273,8 @@
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
     }
 
-    // MA ciklusnapi index (0=Pentek): 16:00 utan a kovetkezo nap
-    const maCycleIdx = (now.getHours()>=16) ? Math.min(6, c.dayIndex+1) : c.dayIndex;
+    // MA ciklusnapi index (0=Pentek): a szegmentum, amiben most vagyunk (hatar 16:00)
+    const maCycleIdx = c.dayIndex;
 
     // segmented bar (7 buckets) - ciklusnapi index szerint, MA = maCycleIdx
     const seg = document.getElementById("segbar"); seg.innerHTML="";
@@ -287,7 +287,7 @@
     // day grid: i -> ciklusnap (aw+i)%7, hogy a grafikon X-pozicioihoz igazodjon (0=Pentek=start)
     const grid=document.getElementById("daygrid"); grid.innerHTML="";
     for(let i=0;i<7;i++){
-      const w=(c.aw+i)%7;
+      const w=(c.aw+1+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
       d.innerHTML=`<div class="d">${WDS[w]}</div><div class="v">${HF((i+1)*100/7)}%</div>`;
@@ -374,9 +374,9 @@
       s+=`<line x1="${x0}" y1="${Y(v)}" x2="${x1}" y2="${Y(v)}" stroke="#1c2438" stroke-width="1"/>`;
       s+=`<text x="${x0-8}" y="${Y(v)+3}" fill="#6b7488" font-size="9" text-anchor="end">${v}%</text>`;
     });
-    // X labels: i. X-pont = ciklus i. napja (aw+i)%7, illeszkedik a napi racshoz
+    // X labels: i. X-pont = a (i+1). napi szegmentum vege (aw+1+i)%7, illeszkedik a napi racshoz
     const XL=[];
-    for(let i=0;i<8;i++) XL.push(WDS[(c.aw+i)%7]);
+    for(let i=0;i<8;i++) XL.push(WDS[(c.aw+1+i)%7]);
     for(let i=0;i<8;i++){
       s+=`<text x="${X(i)}" y="${H-8}" fill="#6b7488" font-size="9" text-anchor="middle">${XL[i]}</text>`;
     }
@@ -398,8 +398,8 @@
       Object.keys(history).forEach(k=>{
         const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]);
         if(d<c.start || d>=c.end) return;
-        // +16h korrekcio: a mentett datum a 16:00 utani nap, igy a ciklusnapra essen
-        const dayIdx=Math.floor((d - c.start + 16*3600*1000)/DAY_MS);
+        // ciklusnapi index: a mentett datum (mar 16:00 utani napra korrigalva) -> floor
+        const dayIdx=Math.floor((d - c.start)/DAY_MS);
         if(dayIdx<0||dayIdx>6) return;
         pts.push([dayIdx, Math.max(0,Math.min(100,history[k]))]);
       });
