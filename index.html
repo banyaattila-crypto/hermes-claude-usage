@@ -93,6 +93,13 @@
     font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.02em;
     backdrop-filter:blur(2px);
   }
+  .mabadge{
+    position:absolute;top:6px;right:2px;
+    background:rgba(45,212,191,.14);border:1px solid rgba(45,212,191,.4);color:var(--green);
+    font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.02em;
+    backdrop-filter:blur(2px);
+  }
+  .mabadge[hidden]{display:none;}
   .circles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .circ{background:var(--card2);border-radius:14px;padding:14px 6px;text-align:center;border:1px solid var(--line);}
   .circ .ct{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px;}
@@ -158,6 +165,7 @@
     <div class="sectitle">Kumulatív felhasználás <span class="hint">terv (sárga) vs. valós (zöld)</span></div>
     <div class="chartwrap">
       <svg id="chart" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="mabadge" id="maBadge" hidden>MA —%</div>
       <div class="resetbadge" id="resetBadge">—</div>
     </div>
     <div class="legend">
@@ -423,7 +431,9 @@
       // MA pulzáló halo
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" opacity=".25"><animate attributeName="r" values="6;11;6" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".30;.05;.30" dur="1.8s" repeatCount="indefinite"/></circle>`;
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" stroke="#0b0f1a" stroke-width="2" filter="url(#glow)"/>`;
-      s+=`<text x="${rx}" y="${ry-14}" fill="#34d399" font-size="10.5" text-anchor="middle" font-weight="800">MA ${HF(c.real)}%</text>`;
+      // MA szoveg KIVESZVE az SVG-bol (ne takarja a grafikont) -> badge divbe kerul
+      const mb=document.getElementById("maBadge");
+      if(mb){ mb.hidden=false; mb.textContent=`MA ${HF(c.real)}%`; }
     }
     svg.innerHTML=s;
   }
