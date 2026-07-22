@@ -37,16 +37,9 @@
   .tagrow{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
   .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);}
   .ma-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.08em;}
-  .hero{display:flex;justify-content:center;margin:6px 0 4px;}
-  .ringwrap{position:relative;width:230px;height:230px;display:flex;align-items:center;justify-content:center;}
-  .ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
-  .ring-bg{fill:none;stroke:#1c2438;stroke-width:9;}
-  .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:9;stroke-linecap:round;
-    stroke-dasharray:339.292;stroke-dashoffset:339.292;
-    filter:drop-shadow(0 0 6px rgba(255,200,87,.5));
-    transition:stroke-dashoffset 1s ease;}
-  .ring-center{position:relative;text-align:center;z-index:2;}
-  @keyframes ringShimmer{0%{stroke-opacity:1}50%{stroke-opacity:.6}100%{stroke-opacity:1}}
+  .hero{display:flex;flex-direction:column;align-items:center;margin:6px 0 4px;}
+  .sparkwrap{width:100%;max-width:300px;margin-top:10px;}
+  .sparkwrap svg{width:100%;height:64px;display:block;}
   .big{font-size:64px;font-weight:900;line-height:1;margin:0;font-variant-numeric:tabular-nums;font-family:"Fraunces",Georgia,serif;letter-spacing:-.01em;
     background:linear-gradient(100deg,#fff 0%,#ffc857 40%,#ffd97a 55%,#fff 100%);
     background-size:200% auto;
@@ -135,22 +128,10 @@
   <div class="card">
     <div class="ma-label" id="maLabel">MA · —</div>
     <div class="hero">
-      <div class="ringwrap">
-        <svg class="ring" viewBox="0 0 120 120">
-          <defs>
-            <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#fff"/>
-              <stop offset="45%" stop-color="#ffc857"/>
-              <stop offset="100%" stop-color="#ffd97a"/>
-            </linearGradient>
-          </defs>
-          <circle class="ring-bg" cx="60" cy="60" r="54"/>
-          <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="54"/>
-        </svg>
-        <div class="ring-center">
-          <div class="big" id="bigPct">0,00<small>%</small></div>
-          <div class="sub" id="bigSub">a heti kvótából halmozottan</div>
-        </div>
+      <div class="big" id="bigPct">0,00<small>%</small></div>
+      <div class="sub" id="bigSub">a heti kvótából halmozottan</div>
+      <div class="sparkwrap">
+        <svg id="spark" viewBox="0 0 300 64" preserveAspectRatio="none"></svg>
       </div>
     </div>
 
@@ -263,9 +244,8 @@
     // main big = időarányos (ciklus eleje óta eltelt %)
     const shown = c.frac * 100;
     document.getElementById("bigPct").innerHTML = `${HF(shown)}<small>%</small>`;
-    // arany progressz-gyűrű (339.292 = 2*pi*54)
-    const ring = document.getElementById("ringFg");
-    if(ring) ring.style.strokeDashoffset = (339.292 * (1 - Math.max(0,Math.min(1,c.frac)))).toFixed(2);
+    // arany progressz-gyűrű helyett: színes sparkline a szám alatt
+    drawSpark(c, state.history);
     const t0 = c.start.toLocaleString("hu-HU",{weekday:"short",hour:"2-digit",minute:"2-digit"});
     document.getElementById("bigSub").textContent = `${t0} óta eltelt időarányos rész (percenként frissül)`;
 
@@ -435,6 +415,57 @@
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" opacity=".25"><animate attributeName="r" values="6;11;6" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".30;.05;.30" dur="1.8s" repeatCount="indefinite"/></circle>`;
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" stroke="#0b0f1a" stroke-width="2" filter="url(#glow)"/>`;
       s+=`<text x="${rx}" y="${ry-14}" fill="#34d399" font-size="10.5" text-anchor="middle" font-weight="800">MA ${HF(c.real)}%</text>`;
+    }
+    svg.innerHTML=s;
+  }
+
+  function drawSpark(c, history){
+    const svg=document.getElementById("spark"); if(!svg) return;
+    const W=300,H=64,pad=6;
+    const X=i=>pad+(W-2*pad)*(i/7);
+    const Y=v=>pad+(H-2*pad)*(1-v/100);
+    // defs: gradientek
+    let s=`<defs>
+      <linearGradient id="spGold" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffc857" stop-opacity=".38"/>
+        <stop offset="100%" stop-color="#ffc857" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="spGreen" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#34d399" stop-opacity=".40"/>
+        <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="spLineGold" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#ffd97a"/><stop offset="100%" stop-color="#ffb347"/>
+      </linearGradient>
+      <linearGradient id="spLineGreen" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#2dd4bf"/>
+      </linearGradient>
+    </defs>`;
+    // tervvonal (8 pont, sárga)
+    let pl=""; for(let i=0;i<8;i++){ pl+=(i?" L":"M")+X(i)+" "+Y(i*100/7); }
+    s+=`<path d="${pl} L ${X(7)} ${H-pad} L ${X(0)} ${H-pad} Z" fill="url(#spGold)"/>`;
+    s+=`<path d="${pl}" fill="none" stroke="url(#spLineGold)" stroke-width="2.4" stroke-linecap="round"/>`;
+    // valós gorbe, ha van
+    const pts=[];
+    if(history && typeof history==="object"){
+      Object.keys(history).forEach(k=>{
+        const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]);
+        if(d<c.start || d>=c.end) return;
+        const di=Math.floor((d-c.start)/DAY_MS); if(di<0||di>6) return;
+        pts.push([di, Math.max(0,Math.min(100,history[k]))]);
+      });
+    }
+    if(c.real!=null) pts.push([c.frac*7, c.real]);
+    if(pts.length){
+      pts.sort((a,b)=>a[0]-b[0]);
+      let rl=""; pts.forEach((pt,i)=>{ rl+=(i?" L":"M")+X(pt[0])+" "+Y(pt[1]); });
+      s+=`<path d="${rl} L ${X(pts[pts.length-1][0])} ${H-pad} L ${X(pts[0][0])} ${H-pad} Z" fill="url(#spGreen)"/>`;
+      s+=`<path d="${rl}" fill="none" stroke="url(#spLineGreen)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+      pts.forEach(pt=>{ s+=`<circle cx="${X(pt[0])}" cy="${Y(pt[1])}" r="3" fill="#34d399" stroke="#0b0f1a" stroke-width="1.5"/>`; });
+    } else {
+      // ha nincs adat: MA pont a tervvonalon
+      const rx=X(c.frac*7), ry=Y(c.frac*100);
+      s+=`<circle cx="${rx}" cy="${ry}" r="3.5" fill="#ffc857" stroke="#0b0f1a" stroke-width="1.5"/>`;
     }
     svg.innerHTML=s;
   }
