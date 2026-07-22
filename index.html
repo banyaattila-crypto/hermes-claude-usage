@@ -280,14 +280,13 @@
 
     // MA szegmens = zaro nap szerint (16:00 utan a kovetkezo szegmens), clamp 7-ra
     const maCycleIdx = Math.min(7, c.dayIndex + 1);
-    const grid=document.getElementById("daygrid"); grid.innerHTML="";
     for(let i=0;i<8;i++){
       const w=(c.aw+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
       const segCls="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
-      // a MA napon a valos erteket mutatjuk (ha van), kulonben a tervet
-      const vTxt = (i===maCycleIdx && c.real!=null) ? c.real : i*100/7;
+      // a napi racs mindig a TERVET mutatja (0%->100% egyenletes), a MA napot az arany keret jeloli
+      const vTxt = i*100/7;
       d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF(vTxt)}%</div>`;
       grid.appendChild(d);
     }
