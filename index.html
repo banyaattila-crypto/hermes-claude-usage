@@ -75,10 +75,10 @@
     border-radius:9px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;
   }
   .anchorbts button.active{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:var(--green);}
-  .segbar{display:flex;gap:4px;margin-top:18px;}
-  .seg{flex:1;height:9px;border-radius:3px;background:var(--bar-future);}
-  .seg.done{background:var(--bar-done);} .seg.today{background:var(--bar-today);}
-  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px;}
+  .segbar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;}
+  .seg{height:9px;border-radius:3px;background:var(--bar-future);width:100%;}
+  .seg.done{background:var(--bar-done);} .seg.today{background:var(--bar-today);box-shadow:0 0 6px rgba(255,200,87,.6);}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px;}
   .day{text-align:center;padding:8px 2px;border-radius:10px;background:var(--card2);}
   .day.today{background:rgba(255,200,87,.16);outline:1px solid rgba(255,200,87,.4);}
   .day .d{font-size:11px;color:var(--muted);font-weight:700;}
@@ -443,15 +443,17 @@
 
   function buildAnchorBts(){
     const wrap=document.getElementById("anchorBts");
-    const names=["V","H","K","Sze","Cs","P","Szo"];
+    // Hétfővel kezdődjön a hét: [H,K,Sze,Cs,P,Szo,V]
+    const order=[1,2,3,4,5,6,0];
+    const names={0:"V",1:"H",2:"K",3:"Sze",4:"Cs",5:"P",6:"Szo"};
     wrap.innerHTML="";
-    for(let d=0;d<7;d++){
+    order.forEach(d=>{
       const b=document.createElement("button");
       b.textContent=names[d];
       if(d===state.anchor) b.classList.add("active");
       b.addEventListener("click",()=>{ state.anchor=d; save(); buildAnchorBts(); render(); });
       wrap.appendChild(b);
-    }
+    });
   }
 
   const editWrap=document.getElementById("editWrap");
