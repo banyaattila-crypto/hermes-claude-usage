@@ -38,8 +38,6 @@
   .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);}
   .ma-label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.08em;}
   .hero{display:flex;flex-direction:column;align-items:center;margin:6px 0 4px;}
-  .sparkwrap{width:100%;max-width:300px;margin-top:10px;}
-  .sparkwrap svg{width:100%;height:64px;display:block;}
   .big{font-size:64px;font-weight:900;line-height:1;margin:0;font-variant-numeric:tabular-nums;font-family:"Fraunces",Georgia,serif;letter-spacing:-.01em;
     background:linear-gradient(100deg,#fff 0%,#ffc857 40%,#ffd97a 55%,#fff 100%);
     background-size:200% auto;
@@ -130,9 +128,6 @@
     <div class="hero">
       <div class="big" id="bigPct">0,00<small>%</small></div>
       <div class="sub" id="bigSub">a heti kvótából halmozottan</div>
-      <div class="sparkwrap">
-        <svg id="spark" viewBox="0 0 300 64" preserveAspectRatio="none"></svg>
-      </div>
     </div>
 
     <div class="usagerow">
@@ -144,7 +139,7 @@
       </span>
     </div>
 
-    <div class="planpill" id="planPill"><span class="dot green"></span><span id="planPillTxt">—</span></div>
+    </div>
 
     <div class="segbar" id="segbar"></div>
     <div class="grid" id="daygrid"></div>
@@ -233,6 +228,9 @@
 
   function render(){
     const now = new Date();
+    // "MA nap": 16:00 után mar a kovetkezo naptari nap szamit
+    const maNow = new Date(now);
+    if(now.getHours() >= 16) maNow.setDate(maNow.getDate()+1);
     const c = compute(now);
 
     document.getElementById("daterange").textContent = `${fmtDate(c.start)} – ${fmtDate(new Date(c.start.getTime()+6*DAY_MS))}`;
@@ -240,33 +238,25 @@
     const rem = c.end - now;
     const rd = Math.max(0,Math.floor(rem/DAY_MS)), rh = Math.max(0,Math.floor((rem%DAY_MS)/3600000)), rm = Math.max(0,Math.floor((rem%3600000)/60000));
     document.getElementById("resetTxt").textContent = `Reset: ${rd}n ${rh}ó ${rm}p`;
-    document.getElementById("maLabel").textContent = `MA · ${fmtLong(now).toUpperCase()}`;
+    document.getElementById("maLabel").textContent = `MA · ${fmtLong(maNow).toUpperCase()}`;
     // main big = időarányos (ciklus eleje óta eltelt %)
     const shown = c.frac * 100;
     document.getElementById("bigPct").innerHTML = `${HF(shown)}<small>%</small>`;
-    // arany progressz-gyűrű helyett: színes sparkline a szám alatt
-    drawSpark(c, state.history);
     const t0 = c.start.toLocaleString("hu-HU",{weekday:"short",hour:"2-digit",minute:"2-digit"});
     document.getElementById("bigSub").textContent = `${t0} óta eltelt időarányos rész (percenként frissül)`;
 
     document.getElementById("realBox").innerHTML = HF(c.real==null?0:c.real)+"<small>%</small>";
     const pc = document.getElementById("planChip");
     const pt = document.getElementById("planTxt");
-    const pp = document.getElementById("planPill");
-    const ppt = document.getElementById("planPillTxt");
     if(c.delta==null){
       pc.style.background="rgba(138,147,168,.15)"; pc.style.color="var(--muted)";
-      pt.textContent="Nincs adat"; pp.style.display="none";
+      pt.textContent="Nincs adat";
     } else if(c.delta<=0){
       pc.style.background="rgba(52,211,153,.14)"; pc.style.color="var(--green)";
       pt.textContent=`Terv alatt ${HF(Math.abs(c.delta))}%`;
-      pp.style.display="inline-flex"; pp.style.background="rgba(45,212,191,.15)"; pp.style.color="var(--teal)";
-      ppt.textContent=`${Math.floor(Math.abs(c.delta)/(100/7))} napja terv alatt`;
     } else {
       pc.style.background="rgba(255,118,118,.16)"; pc.style.color="var(--red)";
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
-      pp.style.display="inline-flex"; pp.style.background="rgba(255,118,118,.16)"; pp.style.color="var(--red)";
-      ppt.textContent=`${Math.ceil(c.delta/(100/7))} napja terv felett`;
     }
 
     // segmented bar (7 buckets)
@@ -277,9 +267,9 @@
       seg.appendChild(d);
     }
 
-    // day grid: bucket i -> weekday (aw+1+i)%7
+    // day grid: bucket i -> weekday (aw+1+i)%7 ; MA kiemeles a 16:00 utani nap szerint
     const grid=document.getElementById("daygrid"); grid.innerHTML="";
-    const todayW = now.getDay();
+    const todayW = maNow.getDay();
     for(let i=0;i<7;i++){
       const w=(c.aw+1+i)%7;
       const d=document.createElement("div");
@@ -419,56 +409,7 @@
     svg.innerHTML=s;
   }
 
-  function drawSpark(c, history){
-    const svg=document.getElementById("spark"); if(!svg) return;
-    const W=300,H=64,pad=6;
-    const X=i=>pad+(W-2*pad)*(i/7);
-    const Y=v=>pad+(H-2*pad)*(1-v/100);
-    // defs: gradientek
-    let s=`<defs>
-      <linearGradient id="spGold" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#ffc857" stop-opacity=".38"/>
-        <stop offset="100%" stop-color="#ffc857" stop-opacity="0"/>
-      </linearGradient>
-      <linearGradient id="spGreen" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#34d399" stop-opacity=".40"/>
-        <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
-      </linearGradient>
-      <linearGradient id="spLineGold" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#ffd97a"/><stop offset="100%" stop-color="#ffb347"/>
-      </linearGradient>
-      <linearGradient id="spLineGreen" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#2dd4bf"/>
-      </linearGradient>
-    </defs>`;
-    // tervvonal (8 pont, sárga)
-    let pl=""; for(let i=0;i<8;i++){ pl+=(i?" L":"M")+X(i)+" "+Y(i*100/7); }
-    s+=`<path d="${pl} L ${X(7)} ${H-pad} L ${X(0)} ${H-pad} Z" fill="url(#spGold)"/>`;
-    s+=`<path d="${pl}" fill="none" stroke="url(#spLineGold)" stroke-width="2.4" stroke-linecap="round"/>`;
-    // valós gorbe, ha van
-    const pts=[];
-    if(history && typeof history==="object"){
-      Object.keys(history).forEach(k=>{
-        const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]);
-        if(d<c.start || d>=c.end) return;
-        const di=Math.floor((d-c.start)/DAY_MS); if(di<0||di>6) return;
-        pts.push([di, Math.max(0,Math.min(100,history[k]))]);
-      });
-    }
-    if(c.real!=null) pts.push([c.frac*7, c.real]);
-    if(pts.length){
-      pts.sort((a,b)=>a[0]-b[0]);
-      let rl=""; pts.forEach((pt,i)=>{ rl+=(i?" L":"M")+X(pt[0])+" "+Y(pt[1]); });
-      s+=`<path d="${rl} L ${X(pts[pts.length-1][0])} ${H-pad} L ${X(pts[0][0])} ${H-pad} Z" fill="url(#spGreen)"/>`;
-      s+=`<path d="${rl}" fill="none" stroke="url(#spLineGreen)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>`;
-      pts.forEach(pt=>{ s+=`<circle cx="${X(pt[0])}" cy="${Y(pt[1])}" r="3" fill="#34d399" stroke="#0b0f1a" stroke-width="1.5"/>`; });
-    } else {
-      // ha nincs adat: MA pont a tervvonalon
-      const rx=X(c.frac*7), ry=Y(c.frac*100);
-      s+=`<circle cx="${rx}" cy="${ry}" r="3.5" fill="#ffc857" stroke="#0b0f1a" stroke-width="1.5"/>`;
-    }
-    svg.innerHTML=s;
-  }
+
 
   function tick(){
     document.getElementById("clock").textContent = new Date().toLocaleTimeString("hu-HU",{hour:"2-digit",minute:"2-digit"});
