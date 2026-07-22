@@ -44,6 +44,7 @@
   .usagerow .lbl{font-size:13px;color:var(--txt);display:flex;align-items:center;gap:7px;}
   .editwrap{display:inline-flex;align-items:center;gap:6px;position:relative;cursor:text;}
   .valbox{background:var(--green-box);color:var(--green);font-weight:800;font-size:18px;padding:8px 12px;border-radius:12px;font-variant-numeric:tabular-nums;transition:.2s;}
+  .valbox small{font-size:12px;font-weight:700;opacity:.8;}
   .editwrap:hover .valbox{outline:1px dashed rgba(52,211,153,.5);}
   .editinp{
     width:0;opacity:0;padding:0;border:none;background:transparent;color:var(--green);
@@ -79,6 +80,13 @@
   .sectitle{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;}
   .sectitle .hint{color:var(--muted);font-size:12px;font-weight:500;}
   svg{width:100%;height:auto;display:block;}
+  .chartwrap{position:relative;}
+  .resetbadge{
+    position:absolute;top:6px;left:2px;
+    background:rgba(255,200,87,.14);border:1px solid rgba(255,200,87,.35);color:var(--gold);
+    font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.02em;
+    backdrop-filter:blur(2px);
+  }
   .circles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .circ{background:var(--card2);border-radius:14px;padding:14px 6px;text-align:center;}
   .circ .ct{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px;}
@@ -117,9 +125,6 @@
         <button id="saveBtn" class="savebtn">✓</button>
       </span>
     </div>
-    <div style="text-align:right;margin-top:6px;">
-      <span class="delta" id="deltaTxt">%  0,00%</span>
-    </div>
 
     <div class="planpill" id="planPill"><span class="dot green"></span><span id="planPillTxt">—</span></div>
 
@@ -134,7 +139,10 @@
 
   <div class="card">
     <div class="sectitle">Kumulatív felhasználás <span class="hint">terv (sárga) vs. valós (zöld)</span></div>
-    <svg id="chart" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="chartwrap">
+      <svg id="chart" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="resetbadge" id="resetBadge">—</div>
+    </div>
     <div class="legend">
       <span><span class="dot gold"></span>lineáris terv</span>
       <span><span class="dot green"></span>valós (MA)</span>
@@ -219,23 +227,20 @@
     const t0 = c.start.toLocaleString("hu-HU",{weekday:"short",hour:"2-digit",minute:"2-digit"});
     document.getElementById("bigSub").textContent = `${t0} óta eltelt időarányos rész (percenként frissül)`;
 
-    document.getElementById("realBox").textContent = HF(c.real==null?0:c.real);
-    const dt = document.getElementById("deltaTxt");
+    document.getElementById("realBox").innerHTML = HF(c.real==null?0:c.real)+"<small>%</small>";
     const pc = document.getElementById("planChip");
     const pt = document.getElementById("planTxt");
     const pp = document.getElementById("planPill");
     const ppt = document.getElementById("planPillTxt");
-    if(c.delta==null){ dt.textContent="%  —"; dt.style.color="var(--muted)";
+    if(c.delta==null){
       pc.style.background="rgba(138,147,168,.15)"; pc.style.color="var(--muted)";
       pt.textContent="Nincs adat"; pp.style.display="none";
     } else if(c.delta<=0){
-      dt.textContent=`%  ${c.delta.toFixed(2).replace(".",",")}%`; dt.style.color="var(--green)";
       pc.style.background="rgba(52,211,153,.14)"; pc.style.color="var(--green)";
       pt.textContent=`Terv alatt ${HF(Math.abs(c.delta))}%`;
       pp.style.display="inline-flex"; pp.style.background="rgba(45,212,191,.15)"; pp.style.color="var(--teal)";
       ppt.textContent=`${Math.floor(Math.abs(c.delta)/(100/7))} napja terv alatt`;
     } else {
-      dt.textContent=`%  +${HF(c.delta)}%`; dt.style.color="var(--red)";
       pc.style.background="rgba(255,118,118,.16)"; pc.style.color="var(--red)";
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
       pp.style.display="inline-flex"; pp.style.background="rgba(255,118,118,.16)"; pp.style.color="var(--red)";
@@ -265,6 +270,11 @@
     document.getElementById("c2").textContent = HF(c.real==null?0:c.real)+"%";
     document.getElementById("c3").textContent = (c.dayIndex+1)+"/7";
 
+    // reset badge: hátralévő napok
+    const rb = document.getElementById("resetBadge");
+    const remDays = Math.max(0, Math.ceil((c.end-now)/DAY_MS - 0.0001));
+    rb.textContent = `${remDays} nap Reset!`;
+
     drawChart(c);
   }
 
@@ -289,7 +299,12 @@
         <feGaussianBlur stdDeviation="3" result="b"/>
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
+      <pattern id="gridRaster" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="9" stroke="#27314a" stroke-width="0.6"/>
+      </pattern>
     </defs>`;
+    // raszter háttér a plot területen
+    s+=`<rect x="${x0}" y="${y1}" width="${x1-x0}" height="${y0-y1}" fill="url(#gridRaster)"/>`;
     // grid (fintebb, halványabb)
     [0,25,50,75,100].forEach(v=>{
       s+=`<line x1="${x0}" y1="${Y(v)}" x2="${x1}" y2="${Y(v)}" stroke="#1c2438" stroke-width="1"/>`;
