@@ -374,9 +374,9 @@
       s+=`<line x1="${x0}" y1="${Y(v)}" x2="${x1}" y2="${Y(v)}" stroke="#1c2438" stroke-width="1"/>`;
       s+=`<text x="${x0-8}" y="${Y(v)+3}" fill="#6b7488" font-size="9" text-anchor="end">${v}%</text>`;
     });
-    // X labels
-    const XL=[WDS[c.aw]];
-    for(let i=0;i<7;i++) XL.push(WDS[(c.aw+1+i)%7]);
+    // X labels: i. X-pont = ciklus i. napja (aw+i)%7, illeszkedik a napi racshoz
+    const XL=[];
+    for(let i=0;i<8;i++) XL.push(WDS[(c.aw+i)%7]);
     for(let i=0;i<8;i++){
       s+=`<text x="${X(i)}" y="${H-8}" fill="#6b7488" font-size="9" text-anchor="middle">${XL[i]}</text>`;
     }
