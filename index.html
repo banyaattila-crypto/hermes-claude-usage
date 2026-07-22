@@ -273,21 +273,23 @@
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
     }
 
-    // segmented bar (7 buckets)
+    // MA ciklusnapi index (0=Pentek): 16:00 utan a kovetkezo nap
+    const maCycleIdx = (now.getHours()>=16) ? Math.min(6, c.dayIndex+1) : c.dayIndex;
+
+    // segmented bar (7 buckets) - ciklusnapi index szerint, MA = maCycleIdx
     const seg = document.getElementById("segbar"); seg.innerHTML="";
     for(let i=0;i<7;i++){
       const d=document.createElement("div");
-      d.className="seg"+(i<c.dayIndex?" done":(i===c.dayIndex?" today":""));
+      d.className="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
       seg.appendChild(d);
     }
 
-    // day grid: bucket i -> weekday (aw+1+i)%7 ; MA kiemeles a 16:00 utani nap szerint
+    // day grid: i -> ciklusnap (aw+i)%7, hogy a grafikon X-pozicioihoz igazodjon (0=Pentek=start)
     const grid=document.getElementById("daygrid"); grid.innerHTML="";
-    const todayW = maNow.getDay();
     for(let i=0;i<7;i++){
-      const w=(c.aw+1+i)%7;
+      const w=(c.aw+i)%7;
       const d=document.createElement("div");
-      d.className="day"+(w===todayW?" today":"");
+      d.className="day"+(i===maCycleIdx?" today":"");
       d.innerHTML=`<div class="d">${WDS[w]}</div><div class="v">${HF((i+1)*100/7)}%</div>`;
       grid.appendChild(d);
     }
@@ -396,8 +398,8 @@
       Object.keys(history).forEach(k=>{
         const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]);
         if(d<c.start || d>=c.end) return;
-        // nap index a ciklusban (0..6)
-        const dayIdx=Math.floor((d - c.start)/DAY_MS);
+        // +16h korrekcio: a mentett datum a 16:00 utani nap, igy a ciklusnapra essen
+        const dayIdx=Math.floor((d - c.start + 16*3600*1000)/DAY_MS);
         if(dayIdx<0||dayIdx>6) return;
         pts.push([dayIdx, Math.max(0,Math.min(100,history[k]))]);
       });
