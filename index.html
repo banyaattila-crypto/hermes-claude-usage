@@ -280,7 +280,9 @@
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
       const segCls="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
-      d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF((i+1)*100/7)}%</div>`;
+      // a MA napon a valos erteket mutatjuk (ha van), kulonben a tervet
+      const vTxt = (i===maCycleIdx && c.real!=null) ? c.real : (i+1)*100/7;
+      d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF(vTxt)}%</div>`;
       grid.appendChild(d);
     }
 
@@ -414,7 +416,7 @@
     </g>`;
     // valós: kitöltés + görbe (ha van) + pulzáló MA
     if(c.real!=null){
-      const rx=X(c.frac*7), ry=Y(c.real);
+      const rx=X(c.dayIndex), ry=Y(c.real);
       // valós függőleges guide
       s+=`<line x1="${rx}" y1="${ry}" x2="${rx}" y2="${y0}" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>`;
       // MA pulzáló halo
