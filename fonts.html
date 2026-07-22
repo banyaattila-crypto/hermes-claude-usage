@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Usage · Font demó</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Sora:wght@600;800&family=Unbounded:wght@600;800&family=Bebas+Neue&family=Archivo+Black&family=Syne:wght@700;800&family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0f1a;--card:#141a2b;--line:#26304a;--txt:#e8ecf5;--muted:#8a93a8;--gold:#ffc857;--green:#34d399;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:radial-gradient(1200px 600px at 70% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding:24px 14px 48px;display:flex;justify-content:center;}
+  .app{width:100%;max-width:520px;}
+  h0{font-size:22px;font-weight:800;margin-bottom:4px;}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.5;}
+  .chip{display:inline-block;background:rgba(255,200,87,.12);color:var(--gold);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:18px;letter-spacing:.1em;}
+  .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px;}
+  .fname{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+  .fname .tag{font-size:10px;color:var(--green);background:rgba(52,211,153,.12);padding:2px 8px;border-radius:999px;}
+  .title{font-size:30px;line-height:1.05;margin-bottom:6px;}
+  .big{font-size:64px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+  .big small{font-size:26px;}
+  /* betűtípusok */
+  .f-space .title,.f-space .big{font-family:"Space Grotesk",sans-serif;}
+  .f-sora .title,.f-sora .big{font-family:"Sora",sans-serif;}
+  .f-unbounded .title,.f-unbounded .big{font-family:"Unbounded",sans-serif;}
+  .f-bebas .title,.f-bebas .big{font-family:"Bebas Neue",sans-serif;}
+  .f-archivo .title,.f-archivo .big{font-family:"Archivo Black",sans-serif;}
+  .f-syne .title,.f-syne .big{font-family:"Syne",sans-serif;font-weight:800;}
+  .f-anton .title,.f-anton .big{font-family:"Anton",sans-serif;font-weight:400;}
+  .note{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="chip">FONT DEMÓ</div>
+  <h0>Melyik legyen a dögös font?</h0>
+  <div class="sub">Mindegyiknél ugyanaz a font a <b>Claude Usage</b> címsoron és a nagy <b>%-os</b> értéken. Szavazz: írd meg a nevét (pl. "Unbounded"), és beállítom a főoldalra.</div>
+
+  <div class="card f-space"><div class="fname">Space Grotesk <span class="tag">geometrikus / techy</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-sora"><div class="fname">Sora <span class="tag">futurisztikus / tiszta</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-unbounded"><div class="fname">Unbounded <span class="tag">gömbölyű / vastag / dögös</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-bebas"><div class="fname">Bebas Neue <span class="tag">kondenzált / nagy számokra király</span></div><div class="title">CLAUDE USAGE</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-archivo"><div class="fname">Archivo Black <span class="tag">nehéz / erős</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-syne"><div class="fname">Syne <span class="tag">karakteres / modern</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-anton"><div class="fname">Anton <span class="tag">extra vastag kondenzált</span></div><div class="title">CLAUDE USAGE</div><div class="big">69,05<small>%</small></div></div>
+
+  <div class="note">Betűtípusok a Google Fonts-ról töltődnek be (internet kell).<br>Ha tetszik egy, mondd a nevét — beépítem a főoldalra.</div>
+</div>
+</body>
+</html>
