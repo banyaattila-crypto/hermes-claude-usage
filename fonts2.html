@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Usage · Font v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@900&family=Inter:wght@900&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0f1a;--card:#141a2b;--line:#26304a;--txt:#e8ecf5;--muted:#8a93a8;--gold:#ffc857;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:radial-gradient(1200px 600px at 70% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding:24px 14px 48px;display:flex;justify-content:center;}
+  .app{width:100%;max-width:520px;}
+  h0{font-size:22px;font-weight:800;margin-bottom:4px;}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.5;}
+  .chip{display:inline-block;background:rgba(255,200,87,.12);color:var(--gold);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:18px;letter-spacing:.1em;}
+  .card{background:linear-gradient(180deg,var(--card) 0%,#10141f 100%);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:14px;}
+  .fname{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;}
+  .fname .tag{font-size:10px;color:var(--gold);}
+  .title{font-size:30px;font-weight:800;line-height:1.05;margin-bottom:4px;}
+  .big{font-size:70px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.03em;}
+  .big small{font-size:30px;font-weight:800;}
+  .f-geist .title,.f-geist .big{font-family:"Geist",-apple-system,sans-serif;}
+  .f-inter .title,.f-inter .big{font-family:"Inter",-apple-system,sans-serif;}
+  .f-general .title,.f-general .big{font-family:"General Sans",-apple-system,sans-serif;}
+  /* SF Pro csak Apple eszközön jelenik meg - teszteld iPhone-on */
+  .f-sf .title,.f-sf .big{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;}
+  .note{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="chip">FONT V2 · MITN KARIKÁZOTT SZÁM</div>
+  <h0>Melyik áll a legközelebb az eredetihez?</h0>
+  <div class="sub">A képen a pirossal karikázott <b>69,05%</b> szám eredeti fontját keressük (az iOS SF Pro). Itt 3 közeli pótlék + az eredeti (ha iPhone-on nézed).</div>
+
+  <div class="card f-sf"><div class="fname">SF Pro Display (eredeti — csak iPhone/Mac) <span class="tag"> referencia</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-geist"><div class="fname">Geist (Vercel) <span class="tag">legjobb SF klón</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-general"><div class="fname">General Sans (Fontshare) <span class="tag">közeli</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+  <div class="card f-inter"><div class="fname">Inter (előző) <span class="tag"> túl "szűk"</span></div><div class="title">Claude Usage</div><div class="big">69,05<small>%</small></div></div>
+
+  <div class="note">A főoldalra már ráraktam a <b>Geist</b>-et (legjobb ingyenes SF Pro pótlék).<br>Ha másik tetszik jobban, írd meg a nevét, átállítom.</div>
+</div>
+</body>
+</html>
