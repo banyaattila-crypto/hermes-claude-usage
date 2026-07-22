@@ -280,8 +280,8 @@
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
     }
 
-    // day grid: 8 oszlop, Pentekekkel kezd es zarul (P,Szo,Vas,Het,Ked,Sze,Csu,P)
-    const maCycleIdx = c.dayIndex;
+    // MA szegmens = zaro nap szerint (16:00 utan a kovetkezo szegmens), clamp 7-ra
+    const maCycleIdx = Math.min(7, c.dayIndex + 1);
     const grid=document.getElementById("daygrid"); grid.innerHTML="";
     for(let i=0;i<8;i++){
       const w=(c.aw+i)%7;
