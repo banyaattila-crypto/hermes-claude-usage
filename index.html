@@ -262,7 +262,7 @@
     document.getElementById("maLabel").textContent = `MA · ${fmtLong(now).toUpperCase()}`;
     // main big = időarányos (ciklus eleje óta eltelt %)
     const shown = c.frac * 100;
-    document.getElementById("bigPct").innerHTML = `${HF(shown).replace(/,00$/,"")}<small>%</small>`;
+    document.getElementById("bigPct").innerHTML = `${HF(shown)}<small>%</small>`;
     // arany progressz-gyűrű (339.292 = 2*pi*54)
     const ring = document.getElementById("ringFg");
     if(ring) ring.style.strokeDashoffset = (339.292 * (1 - Math.max(0,Math.min(1,c.frac)))).toFixed(2);
