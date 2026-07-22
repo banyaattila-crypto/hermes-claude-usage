@@ -245,7 +245,7 @@
     if(now.getHours() >= 16) maNow.setDate(maNow.getDate()+1);
     const c = compute(now);
 
-    document.getElementById("daterange").textContent = `${fmtDate(c.start)} – ${fmtDate(new Date(c.start.getTime()+6*DAY_MS))}`;
+    document.getElementById("daterange").textContent = `${fmtDate(c.start)} – ${fmtDate(new Date(c.end.getTime()))}`;
 
     const rem = c.end - now;
     const rd = Math.max(0,Math.floor(rem/DAY_MS)), rh = Math.max(0,Math.floor((rem%DAY_MS)/3600000)), rm = Math.max(0,Math.floor((rem%3600000)/60000));
@@ -390,8 +390,9 @@
       Object.keys(history).forEach(k=>{
         const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]);
         if(d<c.start || d>=c.end) return;
-        // ciklusnapi index: a mentett datum (mar 16:00 utani napra korrigalva) -> floor
-        const dayIdx=Math.floor((d - c.start)/DAY_MS);
+        // +16h korrekcio: a mentett datum (mar 16:00 utani napra korrigalva) a szegmens kozepere esik,
+        // igy a helyes ciklusnapi oszlopba kerul (clamp 0..6)
+        const dayIdx=Math.max(0,Math.min(6,Math.floor((d - c.start + 16*3600*1000)/DAY_MS)));
         if(dayIdx<0||dayIdx>6) return;
         pts.push([dayIdx, Math.max(0,Math.min(100,history[k]))]);
       });
