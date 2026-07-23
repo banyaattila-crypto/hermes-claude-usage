@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Claude Usage · Heti ciklus</title>
 <meta name="theme-color" content="#070b16">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:opsz,wght@9..144,900&family=Geist:wght@400;600;700;800;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -672,7 +672,7 @@
   // PWA: service worker regisztralasa (offline + telepitheto)
   if("serviceWorker" in navigator){
     window.addEventListener("load",()=>{
-      navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("SW reg hiba:",e));
+      navigator.serviceWorker.register("/sw.js").catch(e=>console.warn("SW reg hiba:",e));
     });
   }
 })();
