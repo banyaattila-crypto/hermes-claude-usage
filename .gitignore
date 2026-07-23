@@ -1,0 +1,5 @@
+.vercel
+.env*
+cf.log
+preview.svg
+_testpush.sh
