@@ -534,8 +534,8 @@
     s+=`<path d="${pl}" fill="none" stroke="#ffc857" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round"/>`;
     for(let i=0;i<8;i++){
       const v=i*100/7;
-      s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="2.5" fill="#ffc857"/>`;
-      s+=`<text x="${X(i)}" y="${Y(v)-9}" fill="#ffc857" font-size="8" text-anchor="middle" opacity=".85">${HF(v)}</text>`;
+      s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="5" fill="#ffc857" stroke="#fff3d6" stroke-width="1.5"/>`;
+      s+=`<text x="${X(i)}" y="${Y(v)-11}" fill="#ffc857" font-size="8" font-weight="700" text-anchor="middle" opacity=".9">${HF(v)}</text>`;
     }
     // valós napi gorbe: history -> ciklusnapi index szerint rendezve
     if(history && typeof history==="object"){
