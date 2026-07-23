@@ -39,6 +39,7 @@ const document = {
   createElement: () => makeEl("dyn"),
   addEventListener: () => {},
   hidden: false,
+  documentElement: makeEl("html"),
 };
 
 const localStorageStore = {};
@@ -50,6 +51,7 @@ const localStorage = {
 const sandbox = {
   document, localStorage, console,
   Date, Math, JSON, Object, Array, setTimeout, parseFloat, isNaN, alert: () => {},
+  navigator: {},
   window: {},
 };
 sandbox.window = sandbox;

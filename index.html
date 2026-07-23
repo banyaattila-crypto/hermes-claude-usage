@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Claude Usage · Heti ciklus</title>
+<meta name="theme-color" content="#070b16">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:opsz,wght@9..144,900&family=Geist:wght@400;600;700;800;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,7 +21,34 @@
     --glass-border:rgba(255,255,255,.14);
     --glass-hi:rgba(255,255,255,.55);
     --bar-done:rgba(255,255,255,.20); --bar-today:#ffc857; --bar-future:rgba(255,255,255,.07);
+    --bg-grad:
+      radial-gradient(900px 520px at 78% -8%,  #1a2547 0%, transparent 60%),
+      radial-gradient(720px 480px at 12% 8%,   #2a1d4d 0%, transparent 58%),
+      radial-gradient(820px 620px at 88% 102%, #0c3b3a 0%, transparent 60%),
+      linear-gradient(160deg,#070b16 0%,#0a1020 55%,#070b16 100%);
   }
+  /* TEMA: sotet (blur nelkul, egyszeru) */
+  html[data-theme="dark"]{
+    --bg-grad:linear-gradient(160deg,#070b16 0%,#0a1020 55%,#070b16 100%);
+    --glass:rgba(255,255,255,.045);
+    --glass-strong:rgba(255,255,255,.07);
+    --glass-border:rgba(255,255,255,.10);
+  }
+  html[data-theme="dark"] .aurora{display:none;}
+  /* TEMA: napfeny (vilagos) */
+  html[data-theme="light"]{
+    --txt:#1a1f2e; --muted:#5a6378;
+    --bg-grad:linear-gradient(160deg,#eef2fb 0%,#dfe6f5 60%,#eef2fb 100%);
+    --glass:rgba(255,255,255,.55);
+    --glass-strong:rgba(255,255,255,.7);
+    --glass-border:rgba(20,30,60,.14);
+    --glass-hi:rgba(255,255,255,.9);
+    --bar-done:rgba(20,30,60,.18); --bar-future:rgba(20,30,60,.06);
+  }
+  html[data-theme="light"] .aurora{display:none;}
+  html[data-theme="light"] .card{box-shadow:0 12px 40px rgba(20,30,60,.18), inset 0 1px 0 rgba(255,255,255,.6);}
+  html[data-theme="light"] h1{filter:drop-shadow(0 2px 8px rgba(255,200,87,.4));}
+  html[data-theme="light"] .big{filter:drop-shadow(0 2px 10px rgba(255,200,87,.4));}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html,body{min-height:100%;}
   body{
@@ -26,15 +56,10 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     min-height:100vh; padding:20px 14px 40px; display:flex; justify-content:center;
     position:relative; overflow-x:hidden;
-    background:
-      radial-gradient(900px 520px at 78% -8%,  #1a2547 0%, transparent 60%),
-      radial-gradient(720px 480px at 12% 8%,   #2a1d4d 0%, transparent 58%),
-      radial-gradient(820px 620px at 88% 102%, #0c3b3a 0%, transparent 60%),
-      linear-gradient(160deg,#070b16 0%,#0a1020 55%,#070b16 100%);
+    background:var(--bg-grad);
   }
   /* lebegő aurora blobok (blur) - ez ad életet az üvegnek */
   .aurora{position:fixed;z-index:0;border-radius:50%;filter:blur(60px);opacity:.55;pointer-events:none;mix-blend-mode:screen;}
-  .a1{width:240px;height:240px;left:-40px;top:6%;background:radial-gradient(circle,#ffc857 0%,transparent 70%);animation:float1 14s ease-in-out infinite;}
   .a2{width:300px;height:300px;right:-60px;top:30%;background:radial-gradient(circle,#7c5cff 0%,transparent 70%);animation:float2 18s ease-in-out infinite;}
   .a3{width:260px;height:260px;left:30%;bottom:-40px;background:radial-gradient(circle,#2dd4bf 0%,transparent 70%);animation:float3 16s ease-in-out infinite;}
   @keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,40px)}}
@@ -43,6 +68,8 @@
   .app{width:100%;max-width:440px;position:relative;z-index:1;}
   .statusbar{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:18px;padding:0 2px;}
   .statusbar .right{display:flex;gap:8px;align-items:center;}
+  .themebtn{background:var(--glass);border:1px solid var(--glass-border);color:var(--txt);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:.2s;}
+  .themebtn:active{transform:scale(.9);}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;
     background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
   .chip.reset{color:var(--gold);}
@@ -149,7 +176,20 @@
   .footnote{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;
     background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:12px;
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
-  .legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;justify-content:center;flex-wrap:wrap;}
+  .backuprow{display:flex;gap:10px;margin-top:12px;}
+  .bkbtn{flex:1;padding:10px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
+    background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--txt);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.15s;}
+  .bkbtn:active{transform:scale(.97);border-color:var(--gold);}
+  .histlegend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .histlegend span{display:inline-flex;align-items:center;gap:5px;}
+  .histlist{display:flex;flex-direction:column;gap:7px;}
+  .histrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:7px 10px;border-radius:10px;background:var(--glass-strong);border:1px solid var(--glass-border);}
+  .histrow .hl-range{color:var(--muted);font-weight:600;}
+  .histrow .hl-vals{display:flex;gap:12px;font-variant-numeric:tabular-nums;font-weight:700;}
+  .histrow .hl-vals .end{color:var(--gold);}
+  .histrow .hl-vals .avg{color:var(--green);}
+  .histrow.empty{justify-content:center;color:var(--muted);font-weight:500;}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
   .trendbar{margin-top:14px;}
   .trendlbl{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:7px;}
@@ -170,7 +210,7 @@
 <div class="app">
   <div class="statusbar">
     <span id="clock">--:--</span>
-    <span class="right"><span id="net">5G</span><span id="bat">● 40%</span></span>
+    <span class="right"><span id="net">5G</span><span id="bat">● 40%</span><button id="themeBtn" class="themebtn" title="Téma váltása">◐</button></span>
   </div>
 
   <div class="eyebrow">CLAUDE USAGE · HETI CIKLUS</div>
@@ -236,9 +276,21 @@
     </div>
   </div>
 
+  <div class="card" id="historyCard">
+    <div class="sectitle">Előzmények <span class="hint">lezárt ciklusok (utolsó 4)</span></div>
+    <div class="histlegend"><span><span class="dot gold"></span>ciklus vége %</span><span><span class="dot green"></span>átlag/nap</span></div>
+    <div id="historyList" class="histlist"></div>
+  </div>
+
   <div class="footnote">
     Önálló oldal · nincs API · adatok helyben tárolva (localStorage)<br>
     Ciklus: 7 nap · reset a kiválasztott napon · frissítés automatikus (1 perc)
+  </div>
+
+  <div class="backuprow">
+    <button id="exportBtn" class="bkbtn">⬇ Export (mentés)</button>
+    <button id="importBtn" class="bkbtn">⬆ Import (vissza)</button>
+    <input id="importFile" type="file" accept="application/json" hidden>
   </div>
 </div>
 
@@ -261,6 +313,11 @@
   if(typeof state.anchor!=="number") state.anchor=5;
   if(typeof state.history!=="object" || state.history===null) state.history={};
   function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+  const THEMES=["glass","dark","light"];
+  const THEME_ICON={glass:"◐",dark:"●",light:"☀"};
+  function applyTheme(t){ document.documentElement.setAttribute("data-theme", t==="glass"?"":t); const b=document.getElementById("themeBtn"); if(b) b.textContent=THEME_ICON[t]||"◐"; }
+  const savedTheme = localStorage.getItem("kvota_theme") || "glass";
+  applyTheme(savedTheme);
   function todayKey(now){ const d=new Date(now); if(now.getHours()>=16) d.setDate(d.getDate()+1); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
 
   // anchor = reset nap (getDay érték). A ciklus a legutóbbi anchor 16:00-től a következő anchor 16:00-ig tart.
@@ -386,8 +443,37 @@
     rb.textContent = `${remDays} nap Reset!`;
 
     drawChart(c, state.history);
+    renderHistory(c);
   }
 
+  function renderHistory(c){
+    const list=document.getElementById("historyList");
+    if(!list) return;
+    const keys=Object.keys(state.history).filter(k=>{
+      const p=k.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]); return d<c.start;
+    }).sort();
+    if(keys.length===0){ list.innerHTML=`<div class="histrow empty">Még nincs lezárt ciklus · írd be a napi %-okat</div>`; return; }
+    // csoportositas ciklusokra: az adott bejegyzes a hozza tartozo legkozelebbi anchor 16:00 start szerint
+    function cycStartOf(dateStr){
+      const p=dateStr.split("-"); let d=new Date(+p[0],+p[1]-1,+p[2],16,0,0);
+      let guard=0;
+      while(!(d.getDay()===c.aw && d<=new Date(+p[0],+p[1]-1,+p[2])) && guard<14){ d.setDate(d.getDate()-1); d.setHours(16,0,0,0); guard++; }
+      return d;
+    }
+    const groups={};
+    keys.forEach(k=>{ const s=cycStartOf(k).getTime(); (groups[s]=groups[s]||[]).push(k); });
+    const starts=Object.keys(groups).map(Number).sort((a,b)=>b-a).slice(0,4); // utolso 4 lezart
+    const fmt=d=>`${d.getMonth()+1}.${d.getDate()}`;
+    list.innerHTML=starts.map(s=>{
+      const ks=groups[s].sort();
+      const vals=ks.map(k=>state.history[k]);
+      const end=vals[vals.length-1];
+      const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const sd=new Date(s); const ed=new Date(s+7*DAY_MS);
+      return `<div class="histrow"><span class="hl-range">${fmt(sd)}–${fmt(ed)}</span>
+        <span class="hl-vals"><span class="end">${HF(end)}%</span><span class="avg">${HF(avg)}%/nap</span></span></div>`;
+    }).join("");
+  }
   function drawChart(c, history){
     const svg=document.getElementById("chart");
     if(!svg) return;
@@ -535,6 +621,60 @@
   render();
   try { buildAnchorBts(); } catch(e) { console.error("anchorBts hiba:", e); }
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) render(); });
+
+  // TEMA valto: glass -> dark -> light -> glass
+  const themeBtn=document.getElementById("themeBtn");
+  if(themeBtn){
+    themeBtn.addEventListener("click",()=>{
+      const cur=document.documentElement.getAttribute("data-theme")||"glass";
+      const next=THEMES[(THEMES.indexOf(cur)+1)%THEMES.length];
+      applyTheme(next);
+      localStorage.setItem("kvota_theme", next);
+    });
+  }
+
+  // BACKUP: export / import localStorage (kvota_usage_v1)
+  const exportBtn=document.getElementById("exportBtn");
+  const importBtn=document.getElementById("importBtn");
+  const importFile=document.getElementById("importFile");
+  if(exportBtn){
+    exportBtn.addEventListener("click",()=>{
+      const data=localStorage.getItem(STORE)||"{}";
+      const blob=new Blob([data],{type:"application/json"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      const d=new Date();
+      a.href=url; a.download=`claude-usage-backup-${d.toISOString().slice(0,10)}.json`;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+  }
+  if(importBtn && importFile){
+    importBtn.addEventListener("click",()=>importFile.click());
+    importFile.addEventListener("change",e=>{
+      const f=e.target.files[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload=()=>{
+        try{
+          const obj=JSON.parse(r.result);
+          if(obj && typeof obj==="object"){
+            localStorage.setItem(STORE, JSON.stringify(obj));
+            state=load(); render();
+            alert("Visszaállítva ✔");
+          } else { alert("Hibás fájl."); }
+        }catch(err){ alert("Hibás JSON fájl."); }
+      };
+      r.readAsText(f);
+      e.target.value="";
+    });
+  }
+
+  // PWA: service worker regisztralasa (offline + telepitheto)
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>{
+      navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("SW reg hiba:",e));
+    });
+  }
 })();
 </script>
 </body>

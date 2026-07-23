@@ -1,0 +1,19 @@
+{
+  "name": "Claude Usage · Heti ciklus",
+  "short_name": "Claude Usage",
+  "description": "Heti Claude kvóta-követő közvetlen görbével (terv vs. valós)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070b16",
+  "theme_color": "#070b16",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
