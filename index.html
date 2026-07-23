@@ -313,9 +313,22 @@
   const MON = ["jan","febr","márc","ápr","máj","jún","júl","aug","szept","okt","nov","dec"];
   const WDS = ["VAS","HÉT","KED","SZE","CSÜ","PÉN","SZO"];
 
-  function load(){
-    try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&typeof s==="object") return s; }catch(e){}
-    return {realPct:null, anchor:5, history:{}, notify:false};
+  // Count-up animacio a nagy %-nal (uj ertekre felfut 0.4s alatt)
+  let lastBig = null;
+  function animateBig(target){
+    const el = document.getElementById("bigPct");
+    if(el==null) return;
+    const from = (lastBig==null) ? target : lastBig;
+    lastBig = target;
+    const dur = 420, t0 = performance.now();
+    function step(t){
+      const k = Math.min(1, (t - t0) / dur);
+      const e = 1 - Math.pow(1 - k, 3); // easeOutCubic
+      const v = from + (target - from) * e;
+      el.innerHTML = `${HF(v)}<small>%</small>`;
+      if(k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
   let state = load();
   if(typeof state.anchor!=="number") state.anchor=5;
@@ -368,7 +381,7 @@
     document.getElementById("resetTxt").textContent = `Reset: ${rd}n ${rh}ó ${rm}p`;
     // main big = időarányos (ciklus eleje óta eltelt %)
     const shown = c.frac * 100;
-    document.getElementById("bigPct").innerHTML = `${HF(shown)}<small>%</small>`;
+    animateBig(shown);
     const t0 = c.start.toLocaleString("hu-HU",{weekday:"short",hour:"2-digit",minute:"2-digit"});
     document.getElementById("bigSub").textContent = `${t0} óta eltelt időarányos rész (percenként frissül)`;
 
@@ -593,6 +606,11 @@
         pts.sort((a,b)=>a[0]-b[0]);
         let rl="";
         pts.forEach((pt,i)=>{ const px=X(pt[0]), py=Y(pt[1]); rl+=(i?" L":"M")+px+" "+py; });
+        // area kitöltés: a valós gorbe alatt halo zold (X tengelyig zarva)
+        let al=`M ${X(pts[0][0])} ${y0}`;
+        pts.forEach(pt=>{ al+=` L ${X(pt[0])} ${Y(pt[1])}`; });
+        al+=` L ${X(pts[pts.length-1][0])} ${y0} Z`;
+        s+=`<path class="ln-real-area" d="${al}" fill="url(#realFill)" stroke="none" opacity=".5"/>`;
         s+=`<path class="ln-real" pathLength="1" d="${rl}" fill="none" stroke="#34d399" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round"/>`;
         pts.forEach(pt=>{
           const px=X(pt[0]), py=Y(pt[1]);
