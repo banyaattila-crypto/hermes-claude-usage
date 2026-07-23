@@ -320,6 +320,8 @@
     if(el==null) return;
     const from = (lastBig==null) ? target : lastBig;
     lastBig = target;
+    // azonnali vegso ertek (animacio csak bongeszoben, requestAnimationFrame nelkul is latszodik)
+    el.innerHTML = `${HF(target)}<small>%</small>`;
     const dur = 420, t0 = performance.now();
     function step(t){
       const k = Math.min(1, (t - t0) / dur);
@@ -329,6 +331,11 @@
       if(k < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
+  }
+
+  function load(){
+    try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&typeof s==="object") return s; }catch(e){}
+    return {realPct:null, anchor:5, history:{}, notify:false};
   }
   let state = load();
   if(typeof state.anchor!=="number") state.anchor=5;

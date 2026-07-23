@@ -52,7 +52,7 @@ const sandbox = {
   document, localStorage, console,
   Date, Math, JSON, Object, Array, setTimeout, parseFloat, isNaN, alert: () => {},
   performance: { now: () => Date.now() },
-  requestAnimationFrame: (cb) => { cb(performance.now() + 500); return 1; },
+  requestAnimationFrame: () => 1,
   Notification: undefined,
   navigator: {},
   window: {},
