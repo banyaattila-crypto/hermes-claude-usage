@@ -145,6 +145,8 @@
   .day.today{background:rgba(255,200,87,.16);outline:1px solid rgba(255,200,87,.45);}
   .seg{height:9px;border-radius:3px;background:var(--bar-future);margin:0 0 7px;width:100%;}
   .seg.done{background:var(--bar-done);} .seg.today{background:var(--bar-today);box-shadow:0 0 6px rgba(255,200,87,.6);}
+  .seg.over{background:linear-gradient(90deg,#ff7676,#ff9a9a);box-shadow:0 0 6px rgba(255,118,118,.6);}
+  .seg.under{background:linear-gradient(90deg,#34d399,#6ee7b7);}
   .day .d{font-size:11px;color:var(--muted);font-weight:700;}
   .day.today .d{color:var(--gold);}
   .day .v{font-size:11px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--txt);}
@@ -403,14 +405,30 @@
     // MA jelolo: dayIndex a mar eltelt teljes napok szama (0-tol, a reset utan).
     // A racs a reset UTANI naptol indul (SZO..P), igy a P (reset elotti utolso nap) az utolso oszlop = 100%.
     const maCycleIdx = Math.min(6, c.dayIndex);
+    // napi valos ertekek mapelese (ciklusnapi index -> ertek), ugyanaz a logika mint a grafikonban
+    const realByDay = {};
+    if(state.history && typeof state.history==="object"){
+      Object.keys(state.history).forEach(k=>{
+        const p=k.split("-"); const dt=new Date(+p[0],+p[1]-1,+p[2]);
+        if(dt<c.start || dt>=c.end) return;
+        const dayIdx=Math.max(0,Math.min(6,Math.floor((dt - c.start + 16*3600*1000)/DAY_MS)));
+        if(dayIdx<0||dayIdx>6) return;
+        realByDay[dayIdx]=Math.max(0,Math.min(100,state.history[k]));
+      });
+    }
     for(let i=0;i<7;i++){
       const w=(c.aw+1+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
-      const segCls="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
-      // a napi racs azt mutatja, az adott nap VEGERE a terv szerint hany%-nal kell tartanod:
-      // (i+1)/7 * 100 -> V=14% ... P(reset elotti nap)=100%
-      const vTxt = (i+1)*100/7;
+      const vTxt = (i+1)*100/7;  // terv szerinti cel aznap vegere
+      let segCls="seg";
+      if(i<maCycleIdx) segCls+=" done";
+      else if(i===maCycleIdx) segCls+=" today";
+      // tullepes szinezese: ha van valos adat es az > terv -> over (piros), < terv -> under (zold)
+      if(realByDay[i]!=null){
+        if(realByDay[i] > vTxt + 0.01) segCls+=" over";
+        else if(realByDay[i] < vTxt - 0.01) segCls+=" under";
+      }
       d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF(vTxt)}%</div>`;
       grid.appendChild(d);
     }
@@ -567,6 +585,8 @@
     // MAI AKTUALIS sarga pont (frac*100 helyen) - nagyobb, hogy latszodjon a "mai korlat"
     if(c && typeof c.frac==="number"){
       const mx=X(c.frac*7), my=Y(c.frac*100);
+      // fuggoleges vonalzar: a mai ponttol le a 0%-ig (hol tartasz most az idoben)
+      s+=`<line x1="${mx}" y1="${my}" x2="${mx}" y2="${y0}" stroke="#ffc857" stroke-width="1" stroke-dasharray="2 3" opacity=".4"/>`;
       s+=`<circle cx="${mx}" cy="${my}" r="7.2" fill="none" stroke="#ffc857" stroke-width="2" opacity=".5"/>`;
       s+=`<circle cx="${mx}" cy="${my}" r="5" fill="#ffc857" stroke="#fff3d6" stroke-width="2"/>`;
     }
