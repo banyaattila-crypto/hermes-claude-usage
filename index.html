@@ -384,8 +384,8 @@
     for(let i=0;i<8;i++){ pl+=(i?" L":"M")+X(i)+" "+Y(i*100/7); }
     // kitöltés a terv-görbe alatt
     s+=`<path d="${pl} L ${X(7)} ${y0} L ${X(0)} ${y0} Z" fill="url(#fillGrad)"/>`;
-    // terv vonal glow-val
-    s+=`<path d="${pl}" fill="none" stroke="#ffc857" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round"/>`;
+    // terv vonal (glow nelkul, hogy Androidon is latszodjon)
+    s+=`<path d="${pl}" fill="none" stroke="#ffc857" stroke-width="2.5" stroke-linecap="round"/>`;
     for(let i=0;i<8;i++){
       const v=i*100/7;
       s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="2.5" fill="#ffc857"/>`;
@@ -410,7 +410,7 @@
         pts.sort((a,b)=>a[0]-b[0]);
         let rl="";
         pts.forEach((pt,i)=>{ const px=X(pt[0]), py=Y(pt[1]); rl+=(i?" L":"M")+px+" "+py; });
-        s+=`<path d="${rl}" fill="none" stroke="#34d399" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round"/>`;
+        s+=`<path d="${rl}" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
         pts.forEach(pt=>{
           const px=X(pt[0]), py=Y(pt[1]);
           s+=`<circle cx="${px}" cy="${py}" r="3.2" fill="#34d399" stroke="#0b0f1a" stroke-width="1.5"/>`;
@@ -429,7 +429,7 @@
       s+=`<line x1="${rx}" y1="${ry}" x2="${rx}" y2="${y0}" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>`;
       // MA pulzáló halo
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" opacity=".25"><animate attributeName="r" values="6;11;6" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".30;.05;.30" dur="1.8s" repeatCount="indefinite"/></circle>`;
-      s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" stroke="#0b0f1a" stroke-width="2" filter="url(#glow)"/>`;
+      s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" stroke="#0b0f1a" stroke-width="2"/>`;
       // MA szoveg KIVESZVE az SVG-bol (ne takarja a grafikont) -> badge divbe kerul
       const mb=document.getElementById("maBadge");
       if(mb){ mb.hidden=false; mb.textContent=`MA ${HF(c.real)}%`; }
