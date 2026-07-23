@@ -164,7 +164,7 @@
   <div class="card">
     <div class="sectitle">Kumulatív felhasználás <span class="hint">terv (sárga) vs. valós (zöld)</span></div>
     <div class="chartwrap">
-      <svg id="chart" viewBox="0 0 420 220" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="chartHost"></div>
       <div class="resetbadge" id="resetBadge">—</div>
     </div>
     <div class="legend">
@@ -340,7 +340,8 @@
   }
 
   function drawChart(c, history){
-    const svg=document.getElementById("chart");
+    const host=document.getElementById("chartHost");
+    if(!host) return;
     const W=420,H=220,padL=28,padR=34,padT=16,padB=26;
     const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
     const X=i=>x0+(x1-x0)*(i/7);          // 8 pont (0..7)
@@ -433,7 +434,12 @@
       const mb=document.getElementById("maBadge");
       if(mb){ mb.hidden=false; mb.textContent=`MA ${HF(c.real)}%`; }
     }
-    svg.innerHTML=s;
+    try {
+      host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" style="display:block">${s}</svg>`;
+    } catch(e) {
+      console.error("drawChart render hiba:", e);
+      host.innerHTML = `<div style="color:#ff6b6b;padding:10px;font-size:12px">Chart hiba: ${e.message}</div>`;
+    }
   }
 
 
