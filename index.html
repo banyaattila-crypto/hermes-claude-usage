@@ -248,7 +248,6 @@
   </div>
 
   <div class="card">
-    <div class="ma-label" id="maLabel">MA · —</div>
     <div class="hero">
       <div class="big" id="bigPct">0,00<small>%</small></div>
       <div class="sub" id="bigSub">a heti kvótából halmozottan</div>
@@ -320,8 +319,6 @@
   const STORE = "kvota_usage_v1";
   const HF = n => n.toLocaleString("hu-HU",{minimumFractionDigits:2,maximumFractionDigits:2});
   const MON = ["jan","febr","márc","ápr","máj","jún","júl","aug","szept","okt","nov","dec"];
-  const MONL = ["január","február","március","április","május","június","július","augusztus","szeptember","október","november","december"];
-  const DAYL = ["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"];
   const WDS = ["VAS","HÉT","KED","SZE","CSÜ","PÉN","SZO"];
 
   function load(){
@@ -366,14 +363,10 @@
   }
 
   function fmtDate(d){ return `${MON[d.getMonth()]} ${d.getDate()}.`; }
-  function fmtLong(d){ return `${d.getDate()}. ${MONL[d.getMonth()]}., ${DAYL[d.getDay()]}`; }
 
   function render(){
     const grid = document.getElementById("daygrid");
     const now = new Date();
-    // "MA nap": 16:00 után mar a kovetkezo naptari nap szamit
-    const maNow = new Date(now);
-    if(now.getHours() >= 16) maNow.setDate(maNow.getDate()+1);
     const c = compute(now);
 
     document.getElementById("daterange").textContent = `${fmtDate(c.start)} – ${fmtDate(new Date(c.end.getTime()))}`;
@@ -381,7 +374,6 @@
     const rem = c.end - now;
     const rd = Math.max(0,Math.floor(rem/DAY_MS)), rh = Math.max(0,Math.floor((rem%DAY_MS)/3600000)), rm = Math.max(0,Math.floor((rem%3600000)/60000));
     document.getElementById("resetTxt").textContent = `Reset: ${rd}n ${rh}ó ${rm}p`;
-    document.getElementById("maLabel").textContent = `MA · ${fmtLong(maNow).toUpperCase()}`;
     // main big = időarányos (ciklus eleje óta eltelt %)
     const shown = c.frac * 100;
     document.getElementById("bigPct").innerHTML = `${HF(shown)}<small>%</small>`;
