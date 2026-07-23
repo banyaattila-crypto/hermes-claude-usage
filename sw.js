@@ -1,5 +1,7 @@
 // Offline-first service worker for Claude Usage dashboard.
-const CACHE = "claude-usage-v1";
+// Navigaciok (HTML): network-first -> uj deploy azonnal latszik.
+// Egyeb assetek: cache-first (ikon, manifest).
+const CACHE = "claude-usage-v2";
 const ASSETS = [
   "/",
   "/index.html",
@@ -27,8 +29,27 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  // csak sajat origin
   if (url.origin !== self.location.origin) return;
+
+  // Navigacio (HTML oldal): network-first, hogy uj deploy azonnal megjelenjen
+  const isNav = event.request.mode === "navigate" ||
+    (event.request.headers.get("accept") || "").includes("text/html");
+  if (isNav) {
+    event.respondWith(
+      fetch(event.request)
+        .then(resp => {
+          if (resp && resp.ok && resp.type === "basic") {
+            const copy = resp.clone();
+            caches.open(CACHE).then(c => c.put(event.request, copy)).catch(() => {});
+          }
+          return resp;
+        })
+        .catch(() => caches.match("/index.html").then(r => r || new Response("Offline", {status: 503})))
+    );
+    return;
+  }
+
+  // Egyeb assetek: cache-first, fallback halozat
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
@@ -40,13 +61,7 @@ self.addEventListener("fetch", event => {
           }
           return resp;
         })
-        .catch(() => {
-          // offline: ha HTML-t kértek, a cachelt index-et adjuk, kulonben a cachelt assetet
-          if (event.request.headers.get("accept") && event.request.headers.get("accept").includes("text/html")) {
-            return caches.match("/index.html").then(r => r || new Response("Offline", {status: 503}));
-          }
-          return cached || new Response("", {status: 503});
-        });
+        .catch(() => cached || new Response("", {status: 503}));
     })
   );
 });
