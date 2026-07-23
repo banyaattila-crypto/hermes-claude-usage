@@ -462,7 +462,7 @@
     // így nem takarja a görbe bal széli 0%-os feliratát
     // valós: kitöltés + görbe (ha van) + pulzáló MA
     if(c.real!=null){
-      const rx=X(c.dayIndex), ry=Y(c.real);
+      const rx=X(c.frac*7), ry=Y(c.real);
       // valós függőleges guide
       s+=`<line x1="${rx}" y1="${ry}" x2="${rx}" y2="${y0}" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>`;
       // MA pulzáló halo
