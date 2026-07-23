@@ -319,15 +319,17 @@
       pt.textContent=`Terv felett ${HF(c.delta)}%`;
     }
 
-    // MA szegmens = zaro nap szerint (16:00 utan a kovetkezo szegmens), clamp 7-ra
+    // MA jelolo: dayIndex a mar eltelt teljes napok szama (0-tol, a reset utan).
+    // A racs a reset UTANI naptol indul (SZO..P), igy a P (reset elotti utolso nap) az utolso oszlop = 100%.
     const maCycleIdx = Math.min(6, c.dayIndex);
     for(let i=0;i<7;i++){
-      const w=(c.aw+i)%7;
+      const w=(c.aw+1+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
       const segCls="seg"+(i<maCycleIdx?" done":(i===maCycleIdx?" today":""));
-      // a napi racs mindig a TERVET mutatja (0%->100% egyenletes), a MA napot az arany keret jeloli
-      const vTxt = i*100/7;
+      // a napi racs azt mutatja, az adott nap VEGERE a terv szerint hany%-nal kell tartanod:
+      // (i+1)/7 * 100 -> V=14% ... P(reset elotti nap)=100%
+      const vTxt = (i+1)*100/7;
       d.innerHTML=`<div class="${segCls}"></div><div class="d">${WDS[w]}</div><div class="v">${HF(vTxt)}%</div>`;
       grid.appendChild(d);
     }
