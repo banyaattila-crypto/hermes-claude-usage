@@ -152,6 +152,12 @@
   .sectitle .hint{color:var(--muted);font-size:12px;font-weight:500;}
   svg{width:100%;height:auto;display:block;}
   .chartwrap{position:relative;}
+  .chart path.ln-plan, .chart path.ln-real{
+    stroke-dasharray:1; stroke-dashoffset:1;
+    animation:drawLine 1.1s ease-out forwards;
+  }
+  .chart path.ln-real{ animation-delay:.15s; }
+  @keyframes drawLine{ to{ stroke-dashoffset:0; } }
   .resetbadge{
     position:absolute;top:6px;left:8px;right:auto;
     color:var(--gold);
@@ -551,8 +557,8 @@
     for(let i=0;i<8;i++){ pl+=(i?" L":"M")+X(i)+" "+Y(i*100/7); }
     // kitöltés a terv-görbe alatt
     s+=`<path d="${pl} L ${X(7)} ${y0} L ${X(0)} ${y0} Z" fill="url(#fillGrad)"/>`;
-    // terv vonal (glow nelkul, hogy Androidon is latszodjon)
-    s+=`<path d="${pl}" fill="none" stroke="#ffc857" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round"/>`;
+    // terv vonal (glow nelkul, hogy Androidon is latszodjon) + animacio
+    s+=`<path class="ln-plan" pathLength="1" d="${pl}" fill="none" stroke="#ffc857" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round"/>`;
     for(let i=0;i<8;i++){
       const v=i*100/7;
       s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="5" fill="#ffc857" stroke="#fff3d6" stroke-width="1.5"/>`;
@@ -583,7 +589,7 @@
         pts.sort((a,b)=>a[0]-b[0]);
         let rl="";
         pts.forEach((pt,i)=>{ const px=X(pt[0]), py=Y(pt[1]); rl+=(i?" L":"M")+px+" "+py; });
-        s+=`<path d="${rl}" fill="none" stroke="#34d399" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round"/>`;
+        s+=`<path class="ln-real" pathLength="1" d="${rl}" fill="none" stroke="#34d399" stroke-width="2.5" filter="url(#glow)" stroke-linecap="round" stroke-linejoin="round"/>`;
         pts.forEach(pt=>{
           const px=X(pt[0]), py=Y(pt[1]);
           s+=`<circle cx="${px}" cy="${py}" r="3.2" fill="#34d399" stroke="#0b0f1a" stroke-width="1.5"/>`;
