@@ -246,6 +246,7 @@
   function fmtLong(d){ return `${d.getDate()}. ${MONL[d.getMonth()]}., ${DAYL[d.getDay()]}`; }
 
   function render(){
+    const grid = document.getElementById("daygrid");
     const now = new Date();
     // "MA nap": 16:00 után mar a kovetkezo naptari nap szamit
     const maNow = new Date(now);
