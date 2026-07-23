@@ -226,7 +226,7 @@
 <div class="app">
   <div class="statusbar">
     <span id="clock">--:--</span>
-    <span class="right"><span id="net">5G</span><span id="bat">● 40%</span><button id="themeBtn" class="themebtn" title="Téma váltása">◐</button></span>
+    <span class="right"><span id="net">5G</span><span id="bat">● 40%</span><button id="themeBtn" class="themebtn" title="Téma váltása">◐</button><button id="notifBtn" class="themebtn" title="Veszély értesítés bekapcsolása">🔔</button></span>
   </div>
 
   <div class="eyebrow">CLAUDE USAGE · HETI CIKLUS</div>
@@ -318,11 +318,12 @@
 
   function load(){
     try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&typeof s==="object") return s; }catch(e){}
-    return {realPct:null, anchor:5, history:{}};
+    return {realPct:null, anchor:5, history:{}, notify:false};
   }
   let state = load();
   if(typeof state.anchor!=="number") state.anchor=5;
   if(typeof state.history!=="object" || state.history===null) state.history={};
+  if(typeof state.notify!=="boolean") state.notify=false;
   function save(){ localStorage.setItem(STORE, JSON.stringify(state)); }
   const THEMES=["glass","dark","light"];
   const THEME_ICON={glass:"◐",dark:"●",light:"☀"};
@@ -443,7 +444,7 @@
     const pct=Math.max(0,Math.min(120,projEnd));
     if(tMark) tMark.style.left=(pct/120*100).toFixed(1)+"%";
     if(tTxt){
-      if(projEnd>100){ tTxt.textContent=`Veszély: ${HF(projEnd)}% (túllépés)`; tTxt.style.color="var(--red)"; }
+      if(projEnd>100){ tTxt.textContent=`Veszély: ${HF(projEnd)}% (túllépés)`; tTxt.style.color="var(--red)"; notifyWarn(projEnd, c.start); }
       else if(projEnd>85){ tTxt.textContent=`Határon: ${HF(projEnd)}%`; tTxt.style.color="var(--gold)"; }
       else { tTxt.textContent=`Biztos: ${HF(projEnd)}%`; tTxt.style.color="var(--green)"; }
     }
@@ -485,6 +486,26 @@
         <span class="hl-vals"><span class="end">${HF(end)}%</span><span class="avg">${HF(avg)}%/nap</span></span></div>`;
     }).join("");
   }
+  // Bongeszo ertesites veszelykor (token/szerver nelkul, PWA-bol is megy)
+  let lastWarnCycle = null; // melyik ciklusban kuldttunk mar (start.getTime())
+  let lastWarnTs = 0;       // utolso kuldés ideje (2 orankent max 1)
+  function notifyWarn(projEnd, cycleStart){
+    if(!state.notify) return;
+    if(typeof Notification==="undefined" || Notification.permission!=="granted") return;
+    const now=Date.now();
+    // ciklusonkent max 1, vagy 2 orankent ha tartosan veszelyben
+    const sameCycle = cycleStart && lastWarnCycle===cycleStart.getTime();
+    if(sameCycle && (now-lastWarnTs) < 2*3600*1000) return;
+    try{
+      new Notification("⚠️ Claude kvóta veszély", {
+        body:`Várható vége: ${HF(projEnd)}% — túllépés várható! (terv helyett kevesebbel gazdálkodj)`,
+        tag:"kvota-veszely"
+      });
+      lastWarnCycle = cycleStart? cycleStart.getTime() : null;
+      lastWarnTs = now;
+    }catch(e){ console.warn("notify hiba:",e); }
+  }
+
   function drawChart(c, history){
     const svg=document.getElementById("chart");
     if(!svg) return;
@@ -638,6 +659,33 @@
   render();
   try { buildAnchorBts(); } catch(e) { console.error("anchorBts hiba:", e); }
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden) render(); });
+
+  // ERTESITES gomb: engedely kerese + mentes
+  const notifBtn=document.getElementById("notifBtn");
+  function syncNotifIcon(){
+    if(!notifBtn) return;
+    const granted = (typeof Notification!=="undefined" && Notification.permission==="granted" && state.notify);
+    notifBtn.textContent = granted ? "🔕" : "🔔";
+    notifBtn.style.opacity = granted ? "1" : ".55";
+    notifBtn.title = granted ? "Veszély értesítés BE (kikapcsolás: nyomd meg)" : "Veszély értesítés bekapcsolása";
+  }
+  if(notifBtn){
+    syncNotifIcon();
+    notifBtn.addEventListener("click",()=>{
+      if(typeof Notification==="undefined"){ alert("Ez a böngésző nem támogatja az értesítést."); return; }
+      if(Notification.permission==="granted"){
+        // ki/be kapcsolas: allapot mentese
+        if(state.notify){ state.notify=false; save(); syncNotifIcon(); }
+        else { state.notify=true; save(); syncNotifIcon(); }
+        return;
+      }
+      Notification.requestPermission().then(p=>{
+        state.notify = (p==="granted");
+        save(); syncNotifIcon();
+        if(p==="granted"){ new Notification("✅ Értesítés bekapcsolva",{body:"Veszélykor (100% felett) jelezni fogok."}); }
+      }).catch(()=>{ alert("Engedély megtagadva."); });
+    });
+  }
 
   // TEMA valto: glass -> dark -> light -> glass
   const themeBtn=document.getElementById("themeBtn");

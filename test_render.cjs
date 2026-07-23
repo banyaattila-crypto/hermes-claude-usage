@@ -51,6 +51,7 @@ const localStorage = {
 const sandbox = {
   document, localStorage, console,
   Date, Math, JSON, Object, Array, setTimeout, parseFloat, isNaN, alert: () => {},
+  Notification: undefined,
   navigator: {},
   window: {},
 };
