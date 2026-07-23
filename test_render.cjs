@@ -79,7 +79,7 @@ console.log("chart has <path>:    ", chart.innerHTML.includes("<path"));
 console.log("chart has <circle>:  ", chart.innerHTML.includes("<circle"));
 console.log("chart has planned L: ", chart.innerHTML.includes("L24.0") || chart.innerHTML.includes("M28"));
 
-if (chart.innerHTML.length > 0 && chart.innerHTML.includes("<path") && daygrid._children.length === 8) {
+if (chart.innerHTML.length > 0 && chart.innerHTML.includes("<path") && daygrid._children.length === 7) {
   console.log("\nPASS: grafikon es napi racs is renderelodot.");
   process.exit(0);
 } else {

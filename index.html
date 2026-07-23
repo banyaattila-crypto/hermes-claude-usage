@@ -320,8 +320,8 @@
     }
 
     // MA szegmens = zaro nap szerint (16:00 utan a kovetkezo szegmens), clamp 7-ra
-    const maCycleIdx = Math.min(7, c.dayIndex + 1);
-    for(let i=0;i<8;i++){
+    const maCycleIdx = Math.min(6, c.dayIndex);
+    for(let i=0;i<7;i++){
       const w=(c.aw+i)%7;
       const d=document.createElement("div");
       d.className="day"+(i===maCycleIdx?" today":"");
