@@ -177,10 +177,26 @@
     background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:12px;
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
   .backuprow{display:flex;gap:10px;margin-top:12px;}
-  .bkbtn{flex:1;padding:10px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
-    background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--txt);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.15s;}
-  .bkbtn:active{transform:scale(.97);border-color:var(--gold);}
+  .bkbtn{flex:1;padding:11px 10px;border-radius:14px;font-size:12px;font-weight:800;cursor:pointer;
+    color:var(--txt);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.20) 0%, rgba(255,255,255,.05) 48%, rgba(0,0,0,.10) 100%),
+      var(--glass-strong);
+    border:1px solid var(--glass-border);
+    border-top-color:rgba(255,255,255,.55);
+    border-bottom-color:rgba(0,0,0,.25);
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.30),
+      inset 0 1px 0 rgba(255,255,255,.45),
+      inset 0 -2px 4px rgba(0,0,0,.18);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    text-shadow:0 1px 1px rgba(0,0,0,.25);
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s;}
+  .bkbtn:active{transform:translateY(2px);
+    box-shadow:
+      0 1px 3px rgba(0,0,0,.30),
+      inset 0 2px 5px rgba(0,0,0,.30);
+    border-color:var(--gold);}
   .histlegend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:8px;}
   .histlegend span{display:inline-flex;align-items:center;gap:5px;}
   .histlist{display:flex;flex-direction:column;gap:7px;}
