@@ -27,6 +27,10 @@
       radial-gradient(820px 620px at 88% 102%, #0c3b3a 0%, transparent 60%),
       linear-gradient(160deg,#070b16 0%,#0a1020 55%,#070b16 100%);
   }
+  .gauge{width:168px;height:168px;margin:4px auto 2px;}
+  .gaugeSvg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 22px rgba(255,160,60,.28));}
+  .gaugePct{font:700 36px/1 ui-sans-serif,system-ui,sans-serif;fill:var(--txt);}
+  .gaugeUnit{font:600 16px/1 ui-sans-serif,system-ui,sans-serif;fill:var(--muted);}
   /* TEMA: sotet (blur nelkul, egyszeru) */
   html[data-theme="dark"]{
     --bg-grad:linear-gradient(160deg,#070b16 0%,#0a1020 55%,#070b16 100%);
@@ -279,7 +283,24 @@
 
   <div class="card">
     <div class="hero">
-      <div class="big" id="bigPct">0,00<small>%</small></div>
+      <div class="gauge">
+        <svg viewBox="0 0 200 200" class="gaugeSvg" aria-hidden="true">
+          <defs>
+            <clipPath id="gClip"><circle cx="100" cy="100" r="86"/></clipPath>
+            <linearGradient id="gFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd27a"/>
+              <stop offset="100%" stop-color="#ff9d3c"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4"/>
+          <circle cx="100" cy="100" r="86" fill="rgba(255,255,255,.04)"/>
+          <g clip-path="url(#gClip)">
+            <path id="gWave" d="" fill="url(#gFill)" opacity="0.9"/>
+          </g>
+          <text id="gPct" x="100" y="98" text-anchor="middle" class="gaugePct">0,00</text>
+          <text x="100" y="126" text-anchor="middle" class="gaugeUnit">%</text>
+        </svg>
+      </div>
       <div class="sub" id="bigSub">a heti kvótából halmozottan</div>
     </div>
 
@@ -389,25 +410,44 @@
   const MON = ["jan","febr","márc","ápr","máj","jún","júl","aug","szept","okt","nov","dec"];
   const WDS = ["VAS","HÉT","KED","SZE","CSÜ","PÉN","SZO"];
 
-  // Count-up animacio a nagy %-nal (uj ertekre felfut 0.4s alatt)
-  let lastBig = null;
+  // Folyadekos gauge (MA napi halmozott) - hullamzo folyadek, szint = %-nak megfeleloen
+  const gWave = document.getElementById("gWave");
+  const gPct = document.getElementById("gPct");
+  let gaugeCurY = 100, gaugeTargetY = 100, wavePhase = 0, lastBig = null;
+  function setGaugeLevel(pct){
+    pct = Math.max(0, Math.min(100, pct));
+    gaugeTargetY = 186 - (pct/100) * (186 - 14); // y(0%)=186 (ures), y(100%)=14 (tele)
+  }
+  function gaugeFrame(){
+    wavePhase += 0.05;
+    gaugeCurY += (gaugeTargetY - gaugeCurY) * 0.12; // sima szintvaltozas
+    const lvl = gaugeCurY, amp = 4.5;
+    let d = `M0 ${lvl.toFixed(1)}`;
+    for(let x=0; x<=200; x+=8){
+      const y = lvl + Math.sin((x/200)*Math.PI*4 + wavePhase)*amp + Math.sin((x/200)*Math.PI*2.4 + wavePhase*1.5)*amp*0.4;
+      d += ` L${x} ${y.toFixed(1)}`;
+    }
+    d += ` L200 200 L0 200 Z`;
+    if(gWave) gWave.setAttribute("d", d);
+    requestAnimationFrame(gaugeFrame);
+  }
+  // Count-up animacio a kozepso %-nal + gauge szint
   function animateBig(target){
-    const el = document.getElementById("bigPct");
-    if(el==null) return;
+    if(gPct==null) return;
     const from = (lastBig==null) ? target : lastBig;
     lastBig = target;
-    // azonnali vegso ertek (animacio csak bongeszoben, requestAnimationFrame nelkul is latszodik)
-    el.innerHTML = `${HF(target)}<small>%</small>`;
+    setGaugeLevel(target);
     const dur = 420, t0 = performance.now();
     function step(t){
       const k = Math.min(1, (t - t0) / dur);
       const e = 1 - Math.pow(1 - k, 3); // easeOutCubic
       const v = from + (target - from) * e;
-      el.innerHTML = `${HF(v)}<small>%</small>`;
+      if(gPct) gPct.textContent = HF(v);
       if(k < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
+  gaugeFrame();
 
   function load(){
     try{ const s=JSON.parse(localStorage.getItem(STORE)); if(s&&typeof s==="object") return s; }catch(e){}
