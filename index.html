@@ -295,7 +295,9 @@
           <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4"/>
           <circle cx="100" cy="100" r="86" fill="rgba(255,255,255,.04)"/>
           <g clip-path="url(#gClip)">
-            <path id="gWave" d="" fill="url(#gFill)" opacity="0.9"/>
+            <path id="gWave" d="" fill="url(#gFill)" opacity="0.92"/>
+            <path id="gWaveBack" d="" fill="url(#gFill)" opacity="0.35"/>
+            <g id="gDrops"></g>
           </g>
           <text id="gPct" x="100" y="98" text-anchor="middle" class="gaugePct">0,00</text>
           <text x="100" y="126" text-anchor="middle" class="gaugeUnit">%</text>
@@ -411,24 +413,57 @@
   const WDS = ["VAS","HÉT","KED","SZE","CSÜ","PÉN","SZO"];
 
   // Folyadekos gauge (MA napi halmozott) - hullamzo folyadek, szint = %-nak megfeleloen
+  // Eroteljes hullamok, falcsapodas + visszahullo cseppk
   const gWave = document.getElementById("gWave");
+  const gWaveBack = document.getElementById("gWaveBack");
+  const gDrops = document.getElementById("gDrops");
   const gPct = document.getElementById("gPct");
   let gaugeCurY = 100, gaugeTargetY = 100, wavePhase = 0, lastBig = null;
+  let drops = []; // {x, y, vy, r, life}
+  const R = 86, CX = 100, CY = 100; // klippelt kor parameterei
   function setGaugeLevel(pct){
     pct = Math.max(0, Math.min(100, pct));
     gaugeTargetY = 186 - (pct/100) * (186 - 14); // y(0%)=186 (ures), y(100%)=14 (tele)
   }
-  function gaugeFrame(){
-    wavePhase += 0.05;
-    gaugeCurY += (gaugeTargetY - gaugeCurY) * 0.12; // sima szintvaltozas
-    const lvl = gaugeCurY, amp = 4.5;
+  function wavePath(lvl, phase, amp, freq){
     let d = `M0 ${lvl.toFixed(1)}`;
-    for(let x=0; x<=200; x+=8){
-      const y = lvl + Math.sin((x/200)*Math.PI*4 + wavePhase)*amp + Math.sin((x/200)*Math.PI*2.4 + wavePhase*1.5)*amp*0.4;
+    for(let x=0; x<=200; x+=6){
+      const k = x/200;
+      const y = lvl
+        + Math.sin(k*Math.PI*freq + phase)*amp
+        + Math.sin(k*Math.PI*freq*2.3 + phase*1.7)*amp*0.45;
       d += ` L${x} ${y.toFixed(1)}`;
     }
     d += ` L200 200 L0 200 Z`;
-    if(gWave) gWave.setAttribute("d", d);
+    return d;
+  }
+  function spawnDrop(lvl){
+    // csak ha van hely a folyadek felett (ne a tele korben)
+    if(lvl < 30) return;
+    const x = CX + (Math.random()*2-1)*R*0.7;
+    drops.push({x, y: lvl-2, vy: -(1.4+Math.random()*1.2), r: 1.2+Math.random()*1.8, life: 1});
+  }
+  function gaugeFrame(){
+    wavePhase += 0.045;
+    gaugeCurY += (gaugeTargetY - gaugeCurY) * 0.10; // sima szintvaltozas
+    const lvl = gaugeCurY, amp = 9.5; // EROTELES hullam (volt 4.5)
+    if(gWave) gWave.setAttribute("d", wavePath(lvl, wavePhase, amp, 5.0));
+    if(gWaveBack) gWaveBack.setAttribute("d", wavePath(lvl, wavePhase+1.6, amp*0.6, 4.0));
+    // cseppek: felfröccsenés + gravitációs visszahullás
+    if(Math.random() < 0.18) spawnDrop(lvl);
+    let ds = "";
+    for(let i=drops.length-1; i>=0; i--){
+      const p = drops[i];
+      p.vy += 0.16;            // gravitáció
+      p.y += p.vy;
+      p.life -= 0.012;
+      // falcsapodas: ha a kor szélehez ér, pattan vissza (vízszintes irány)
+      const dx = p.x - CX;
+      if(Math.abs(dx) > R-2){ p.x = CX + Math.sign(dx)*(R-2); }
+      if(p.life <= 0 || p.y > lvl+6){ drops.splice(i,1); continue; }
+      ds += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.r.toFixed(1)}" fill="url(#gFill)" opacity="${(p.life*0.9).toFixed(2)}"/>`;
+    }
+    if(gDrops) gDrops.innerHTML = ds;
     requestAnimationFrame(gaugeFrame);
   }
   // Count-up animacio a kozepso %-nal + gauge szint
