@@ -133,6 +133,15 @@
   }
   .editwrap.open .savebtn{width:38px;opacity:1;}
   .editinp:focus{outline:none;border-color:var(--green);}
+  .steprow{display:flex;gap:6px;margin-top:10px;justify-content:flex-end;}
+  .stepbt{
+    background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--txt);
+    border-radius:9px;padding:6px 0;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;
+    flex:1;min-width:0;backdrop-filter:blur(8px);
+  }
+  .stepbt:active{transform:scale(.94);}
+  .stepbt[data-d^="-"]{color:var(--red);}
+  .stepbt[data-d^="+"]{color:var(--green);}
   .anchorbar{display:flex;align-items:center;gap:10px;margin-top:18px;border-top:1px solid rgba(255,255,255,.10);padding-top:14px;flex-wrap:wrap;}
   .anchorlbl{font-size:12px;color:var(--muted);font-weight:700;}
   .anchorbts{display:flex;gap:5px;flex-wrap:wrap;}
@@ -311,6 +320,12 @@
         <input id="pctInput" type="number" inputmode="decimal" step="0.01" min="0" max="100" placeholder="%" class="editinp">
         <button id="saveBtn" class="savebtn">✓</button>
       </span>
+      <div class="steprow" id="stepRow">
+        <button class="stepbt" data-d="-10">−10</button>
+        <button class="stepbt" data-d="-5">−5</button>
+        <button class="stepbt" data-d="5">+5</button>
+        <button class="stepbt" data-d="10">+10</button>
+      </div>
     </div>
 
     <div class="grid" id="daygrid"></div>
@@ -828,6 +843,14 @@
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" opacity=".25"><animate attributeName="r" values="6;11;6" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".30;.05;.30" dur="1.8s" repeatCount="indefinite"/></circle>`;
       s+=`<circle cx="${rx}" cy="${ry}" r="6" fill="#34d399" stroke="#0b0f1a" stroke-width="2" filter="url(#glow)"/>`;
       // MA szoveg KIVESZVE az SVG-bol (ne takarja a grafikont) -> nem jelenik meg sehol
+      // 5-os: ELOREJELZES (lineáris extrapoláció a mai ütem alapján a ciklus végéig)
+      if(c.frac>0.02){
+        const projEnd = c.real / c.frac;            // ha így folytatod, ciklus végén ennyi %
+        const ex=X(7), ey=Y(Math.min(140, projEnd)); // 140-ig engedjuk felmeni (túllépés látszódjon)
+        s+=`<line x1="${rx.toFixed(1)}" y1="${ry.toFixed(1)}" x2="${ex}" y2="${ey.toFixed(1)}" stroke="#22d3ee" stroke-width="2" stroke-dasharray="5 4" opacity=".75"/>`;
+        s+=`<circle cx="${ex}" cy="${ey.toFixed(1)}" r="3.5" fill="#22d3ee" stroke="#0b0f1a" stroke-width="1.5"/>`;
+        s+=`<text x="${ex-4}" y="${(ey-8).toFixed(1)}" fill="#22d3ee" font-size="8.5" font-weight="700" text-anchor="end">${HF(projEnd)}%</text>`;
+      }
     }
     try {
       svg.innerHTML = s;
@@ -934,6 +957,18 @@
 
   const editWrap=document.getElementById("editWrap");
   const pctInput=document.getElementById("pctInput");
+  const stepRow=document.getElementById("stepRow");
+  function applyStep(d){
+    const cur=(state.realPct==null)?0:state.realPct;
+    const val=Math.max(0,Math.min(100, cur+d));
+    state.realPct=val;
+    state.history[todayKey(new Date())]=val;
+    save(); render();
+  }
+  stepRow.addEventListener("click",e=>{
+    const b=e.target.closest(".stepbt"); if(!b) return;
+    applyStep(parseInt(b.dataset.d,10));
+  });
   editWrap.addEventListener("click",e=>{
     if(e.target.id==="saveBtn") return;
     editWrap.classList.add("open");
